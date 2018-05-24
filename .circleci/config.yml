@@ -1,0 +1,64 @@
+version: 2
+jobs:
+
+  build:
+    docker:
+      - image: circleci/node:8-stretch-browsers
+    working_directory: ~/aven-cloud
+    steps:
+      - checkout
+      - run: yarn
+      - run: yarn build
+      - persist_to_workspace:
+          root: ~/aven-cloud
+          paths:
+            - dist
+            - app.yaml
+            - yarn.lock
+            - package.json
+            - .gitignore
+            - node_modules
+            - .circleci
+
+  deploy:
+    machine:
+      enabled: true
+    working_directory: ~/aven-cloud
+    steps:
+      - attach_workspace:
+          at: ~/aven-cloud
+      - run:
+          working_directory: ~/aven-cloud
+          name: Deploy Master to Google Cloud Platform
+          command: |
+            echo $PWD
+            echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+            sudo /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+            sudo /opt/google-cloud-sdk/bin/gcloud config set project $GCLOUD_PROJECT
+
+            # Probably needed for "Google cloud datastore"
+            export GOOGLE_APPLICATION_CREDENTIALS="${HOME}/gcloud-service-key.json"
+
+            echo "STORAGE_ACCESS=$STORAGE_ACCESS" >> ./.env
+            echo "STORAGE_BUCKET=$STORAGE_BUCKET" >> ./.env
+            echo "STORAGE_KEY=$STORAGE_KEY" >> ./.env
+            echo "STORAGE_HOST=$STORAGE_HOST" >> ./.env
+            echo "STORAGE_SECURE=$STORAGE_SECURE" >> ./.env
+            echo "SENDGRID_KEY=$SENDGRID_KEY" >> ./.env
+            echo "AUTH_FROM_EMAIL=$AUTH_FROM_EMAIL" >> ./.env
+            echo "PRIMARY_HOST=$PRIMARY_HOST" >> ./.env
+
+            # Main app deployment:
+            sudo /opt/google-cloud-sdk/bin/gcloud app deploy --project $GCLOUD_PROJECT
+
+workflows:
+  version: 2
+  deployment:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master

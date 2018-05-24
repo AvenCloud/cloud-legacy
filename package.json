@@ -1,0 +1,25 @@
+{
+  "name": "aven-cloud",
+  "version": "1.0.0-alpha.8",
+  "scripts": {
+    "start": "NODE_ENV=production node build/server.js",
+    "dev": "razzle start",
+    "build": "razzle build",
+    "test": "razzle test --env=jsdom"
+  },
+  "dependencies": {
+    "@google-cloud/pubsub": "^0.18.0",
+    "@sendgrid/mail": "^6.2.1",
+    "body-parser": "^1.18.3",
+    "dotenv": "^5.0.1",
+    "express": "^4.16.3",
+    "gun": "^0.9.997",
+    "jsonschema": "^1.2.4",
+    "minio": "^5.0.2",
+    "razzle": "^2.0.0-alpha.12",
+    "react": "^16.4.0",
+    "react-art": "^16.4.0",
+    "react-dom": "^16.4.0",
+    "react-native-web": "^0.7.2"
+  }
+}
