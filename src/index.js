@@ -7,7 +7,7 @@ const server = http.createServer(app);
 
 let currentApp = app;
 
-console.log(require('fs').readFileSync('.env', { encoding: 'utf8' }));
+console.log(JSON.stringify(process.env));
 
 const port = process.env.PORT;
 
