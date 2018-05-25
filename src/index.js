@@ -1,6 +1,8 @@
 import app from './server';
 import http from 'http';
 
+require('dotenv').config();
+
 const server = http.createServer(app);
 
 let currentApp = app;

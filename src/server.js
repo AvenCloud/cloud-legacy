@@ -1,12 +1,9 @@
 import express from 'express';
+import { json } from 'body-parser';
 import ReactDOMServer from 'react-dom/server';
 import { AppRegistry } from 'react-native';
 import dispatch from './dispatch';
 import App from './App';
-
-require('dotenv').config();
-
-const bodyParser = require('body-parser');
 
 const assets = require(process.env.RAZZLE_ASSETS_MANIFEST);
 
@@ -18,7 +15,7 @@ server
   .disable('x-powered-by')
   .use(express.static(process.env.RAZZLE_PUBLIC_DIR));
 
-server.post('/api', bodyParser.json(), async (req, res) => {
+server.post('/api', json(), async (req, res) => {
   try {
     const result = await dispatch(req.body);
     res.send(JSON.stringify(result));
