@@ -3,7 +3,8 @@ const fs = require('fs');
 const { validate } = require('jsonschema');
 
 const actions = {
-  CreateUser: require('./actions/CreateUser'),
+  AccountCreate: require('./actions/AccountCreate'),
+  SessionDestroy: require('./actions/SessionDestroy'),
 };
 
 export default async function dispatch(action) {

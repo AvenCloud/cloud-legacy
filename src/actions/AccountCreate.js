@@ -6,7 +6,7 @@ export const schema = {
   $schema: 'http://json-schema.org/draft-04/schema#',
   properties: {
     type: {
-      enum: ['CreateUser'],
+      enum: ['AccountCreate'],
     },
     user: {
       type: 'string',
@@ -27,7 +27,7 @@ export const schema = {
   additionalProperties: false,
 };
 
-export default async function CreateUser(action) {
+export default async function AccountCreate(action) {
   await welcomeEmail({
     email: action.email,
     code: '123',
