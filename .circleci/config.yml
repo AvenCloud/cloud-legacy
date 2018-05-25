@@ -37,10 +37,7 @@ jobs:
             sudo /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
             sudo /opt/google-cloud-sdk/bin/gcloud config set project $GCLOUD_PROJECT
 
-            # Probably needed for "Google cloud datastore"
-            export GOOGLE_APPLICATION_CREDENTIALS="${HOME}/gcloud-service-key.json"
-
-            echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud-service-key.json" >> ./.env
+            echo "GOOGLE_APPLICATION_CREDENTIALS=./gcloud-service-key.json" >> ./.env
             echo "STORAGE_ACCESS=$STORAGE_ACCESS" >> ./.env
             echo "STORAGE_BUCKET=$STORAGE_BUCKET" >> ./.env
             echo "STORAGE_KEY=$STORAGE_KEY" >> ./.env
