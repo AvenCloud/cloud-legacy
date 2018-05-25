@@ -7,7 +7,7 @@ const server = http.createServer(app);
 
 let currentApp = app;
 
-const port = process.env.PORT;
+const port = process.env.CLOUD_HTTP_PORT || process.env.PORT;
 
 server.listen(port, error => {
   if (error) {

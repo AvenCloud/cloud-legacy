@@ -40,6 +40,7 @@ jobs:
             # Probably needed for "Google cloud datastore"
             export GOOGLE_APPLICATION_CREDENTIALS="${HOME}/gcloud-service-key.json"
 
+            echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud-service-key.json" >> ./.env
             echo "STORAGE_ACCESS=$STORAGE_ACCESS" >> ./.env
             echo "STORAGE_BUCKET=$STORAGE_BUCKET" >> ./.env
             echo "STORAGE_KEY=$STORAGE_KEY" >> ./.env
@@ -48,7 +49,8 @@ jobs:
             echo "SENDGRID_KEY=$SENDGRID_KEY" >> ./.env
             echo "AUTH_FROM_EMAIL=$AUTH_FROM_EMAIL" >> ./.env
             echo "PRIMARY_HOST=$PRIMARY_HOST" >> ./.env
-            echo "PORT=8080" >> ./.env
+            echo "CLOUD_HTTP_PORT=8080" >> ./.env
+            echo "CLOUD_PRIMARY_HOST=aven.cloud" >> ./.env
 
             # Main app deployment:
             sudo /opt/google-cloud-sdk/bin/gcloud app deploy --project $GCLOUD_PROJECT
