@@ -9,7 +9,7 @@ let currentApp = app;
 
 console.log(JSON.stringify(process.env));
 
-const port = process.env.PORT;
+const port = 8080;
 
 server.listen(port, error => {
   if (error) {
