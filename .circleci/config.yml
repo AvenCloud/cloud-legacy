@@ -12,7 +12,7 @@ jobs:
       - persist_to_workspace:
           root: ~/aven-cloud
           paths:
-            - dist
+            - build
             - app.yaml
             - yarn.lock
             - package.json
