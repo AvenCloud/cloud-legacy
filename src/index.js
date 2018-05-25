@@ -7,6 +7,8 @@ const server = http.createServer(app);
 
 let currentApp = app;
 
+console.log(require('fs').readFileSync('.env', { encoding: 'utf8' }));
+
 const port = process.env.PORT;
 
 server.listen(port, error => {
