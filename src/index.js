@@ -7,9 +7,7 @@ const server = http.createServer(app);
 
 let currentApp = app;
 
-console.log(JSON.stringify(process.env));
-
-const port = 8080;
+const port = process.env.PORT;
 
 server.listen(port, error => {
   if (error) {

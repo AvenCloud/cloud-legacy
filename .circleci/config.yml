@@ -13,6 +13,7 @@ jobs:
           root: ~/aven-cloud
           paths:
             - build
+            - public
             - app.yaml
             - yarn.lock
             - package.json
@@ -47,6 +48,7 @@ jobs:
             echo "SENDGRID_KEY=$SENDGRID_KEY" >> ./.env
             echo "AUTH_FROM_EMAIL=$AUTH_FROM_EMAIL" >> ./.env
             echo "PRIMARY_HOST=$PRIMARY_HOST" >> ./.env
+            echo "PORT=8080" >> ./.env
 
             # Main app deployment:
             sudo /opt/google-cloud-sdk/bin/gcloud app deploy --project $GCLOUD_PROJECT
