@@ -61,7 +61,6 @@ class App extends React.Component {
   render() {
     const { dispatch } = this.props;
     const ActiveScreen = screens[this.state.activeScreen];
-    console.log('omg');
     return (
       <View style={{ borderWidth: 12, borderColor: 'green' }}>
         <Button title="ugh" onPress={() => {}} />
