@@ -1,36 +1,78 @@
 import { welcomeEmail } from '../email';
-// import { get, set } from '../data';
-// import { checksum } from '../utils';
+import { getAccount, putAccount, putAuth, putSession } from '../data';
+import { uuid, hashSecureString } from '../utils';
+import { authVerify, PRIMARY_DOMAIN } from '../auth';
+import { isAuthName, authVerificationAction } from '../commonSchema';
+import { object, string } from 'yup';
 
-export const schema = {
-  $schema: 'http://json-schema.org/draft-04/schema#',
-  properties: {
-    type: {
-      enum: ['AccountCreate'],
-    },
-    user: {
-      type: 'string',
-    },
-    email: {
-      type: 'string',
-      format: 'email',
-      minLength: 5,
-      maxLength: 160,
-    },
-    password: {
-      type: 'string',
-      minLength: 5,
-      maxLength: 160,
-    },
-  },
-  required: ['type', 'user', 'email', 'password'],
-  additionalProperties: false,
-};
+export const schema = object()
+  .noUnknown()
+  .shape({
+    type: string().oneOf(['AccountCreate']),
+    domain: string().notRequired(),
+    authName: isAuthName,
+    password: string().notRequired(),
+    ...authVerificationAction,
+  });
 
 export default async function AccountCreate(action) {
-  await welcomeEmail({
-    email: action.email,
-    code: '123',
-  });
-  return { ok: 'cool' };
+  const { authName } = action;
+  const domain = action.domain || PRIMARY_DOMAIN;
+  const authData = await authVerify(action);
+  const { authID } = authData;
+
+  if (authData.authName && authData.authName !== authName) {
+    throw {
+      message:
+        'An account already exists with this authentication info. Try logging in instead.',
+      path: 'authInfo',
+    };
+  }
+  if (await getAccount(domain, authName)) {
+    throw {
+      message: 'An account already exists with this name.',
+      path: 'authName',
+    };
+  }
+
+  const passwordHash = action.password
+    ? await hashSecureString(action.password)
+    : null;
+
+  const account = {
+    primaryAuthID: authID,
+    authName,
+    domain,
+    accountCreateTime: Date.now(),
+    passwordHash,
+  };
+
+  await putAccount(domain, authName, account);
+
+  try {
+    await putAuth(domain, authID, {
+      ...authData,
+      authName,
+    });
+  } catch (e) {
+    await putAccount(domain, authName, null);
+    throw e;
+  }
+
+  try {
+    const authSession = uuid();
+    const authKey = uuid();
+
+    await putSession(domain, authSession, {
+      authID,
+      authName,
+      authSession,
+      authKey,
+      sessionCreateTime: Date.now(),
+    });
+
+    return { authName, authSession, authKey };
+  } catch (e) {
+    return { authName, authSession: null, authKey: null };
+  }
 }

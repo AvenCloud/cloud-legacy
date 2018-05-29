@@ -4,17 +4,6 @@ import ReactDOMServer from 'react-dom/server';
 import { AppRegistry } from 'react-native';
 import dispatch from './dispatch';
 import App from './App';
-import pubsub from './pubsub';
-
-// gcloud pubsub subscriptions create session-destroy-subscription --topic session-destroy
-const subscription = pubsub.subscription('session-destroy-subscription');
-
-subscription.on(`message`, message => {
-  console.log(`Received session-destroy message ${message.id}:`);
-  console.log(`\tData: ${message.data}`);
-  console.log(`\tAttributes: ${JSON.stringify(message.attributes)}`);
-  message.ack();
-});
 
 const assets = require(process.env.RAZZLE_ASSETS_MANIFEST);
 
@@ -31,7 +20,11 @@ server.post('/api', json(), async (req, res) => {
     const result = await dispatch(req.body);
     res.send(JSON.stringify(result));
   } catch (e) {
-    res.status(400).send(e);
+    const error = { ...e, message: e.message };
+    if (!error.message) {
+      console.error('Experienced API error without proper formatting!', e);
+    }
+    res.status(400).send({ error });
   }
 });
 

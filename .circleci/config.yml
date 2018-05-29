@@ -8,6 +8,15 @@ jobs:
     steps:
       - checkout
       - run: yarn
+      - run: yarn test
+
+  build:
+    docker:
+      - image: circleci/node:8-stretch-browsers
+    working_directory: ~/aven-cloud
+    steps:
+      - checkout
+      - run: yarn
       - run: yarn build
       - persist_to_workspace:
           root: ~/aven-cloud
@@ -59,9 +68,11 @@ workflows:
   deployment:
     jobs:
       - build
+      - test
       - deploy:
           requires:
             - build
+            - test
           filters:
             branches:
               only: master

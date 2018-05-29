@@ -1,27 +1,20 @@
-import pubsub from '../pubsub';
+import { putSession } from '../data';
+import { PRIMARY_DOMAIN } from '../auth';
+import { isAuthSession } from '../commonSchema';
+import { object, string } from 'yup';
 
-export const schema = {
-  $schema: 'http://json-schema.org/draft-04/schema#',
-  properties: {
-    type: {
-      enum: ['SessionDestroy'],
-    },
-    session: {
-      type: 'string',
-    },
-  },
-  required: ['session'],
-  additionalProperties: false,
-};
-
-console.log('launching pubsub ' + process.env.GOOGLE_APPLICATION_CREDENTIALS);
-
-const { publish } = pubsub.topic('session-destroy').publisher();
+export const schema = object()
+  .noUnknown()
+  .shape({
+    type: string().oneOf(['SessionDestroy']),
+    domain: string().notRequired(),
+    authSession: isAuthSession,
+  });
 
 export default async function SessionDestroy(action) {
-  const message = Buffer.from(JSON.stringify({ session: action.session }));
+  const { authSession } = action;
 
-  publish(message);
+  const domain = action.domain || PRIMARY_DOMAIN;
 
-  return { ok: 'great' };
+  await putSession(domain, action.authSession, undefined);
 }

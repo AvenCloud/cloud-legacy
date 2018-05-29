@@ -1,20 +1,25 @@
 const path = require('path');
 const fs = require('fs');
-const { validate } = require('jsonschema');
 
 const actions = {
+  AuthRequest: require('./actions/AuthRequest'),
   AccountCreate: require('./actions/AccountCreate'),
+  AccountGet: require('./actions/AccountGet'),
+  AccountPut: require('./actions/AccountPut'),
+  SessionCreate: require('./actions/SessionCreate'),
   SessionDestroy: require('./actions/SessionDestroy'),
+  DocGet: require('./actions/DocGet'),
+  DocPut: require('./actions/DocPut'),
 };
 
 export default async function dispatch(action) {
-  if (actions[action.type]) {
-    const a = actions[action.type];
-    const validationResult = validate(action, a.schema);
-    if (!validationResult.valid) {
-      throw validationResult;
-    }
-    return await a.default(action);
+  const a = actions[action.type];
+  if (!a) {
+    throw {
+      message: `Action type "${action.type}" not found`,
+      path: 'type',
+    };
   }
-  throw `Action type "${action.type}" not found`;
+  const validAction = await a.schema.strict().validate(action);
+  return await a.default(validAction);
 }
