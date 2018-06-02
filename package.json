@@ -4,7 +4,7 @@
   "scripts": {
     "start": "NODE_ENV=production node build/server.js",
     "dev": "razzle start",
-    "build": "CI=false razzle build",
+    "build": "razzle build",
     "test": "razzle test --env=jsdom"
   },
   "dependencies": {

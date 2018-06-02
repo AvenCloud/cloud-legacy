@@ -1,9 +1,9 @@
+import uuidv1 from 'uuid/v1';
+import { hash, compare } from 'bcrypt';
+
 const crypto = require('crypto');
 const { promisify } = require('util');
 const randomBytes = promisify(crypto.randomBytes);
-
-import uuidv1 from 'uuid/v1';
-import { hash, compare } from 'bcrypt';
 
 export function checksum(input) {
   const shasum = crypto.createHash('sha1');
