@@ -25,9 +25,7 @@ export const schema = object()
 export default async function DocPut(action) {
   const { authName } = await verifySessionAuth(action);
   if (!authName) {
-    throw new Error({
-      message: 'Invalid authentication',
-    });
+    throw new Error('Invalid authentication');
   }
   const { owner, docName, doc, isPublic, permissions } = action;
   const domain = action.domain || PRIMARY_DOMAIN;
@@ -59,9 +57,7 @@ export default async function DocPut(action) {
     await putDoc(domain, owner, docName, doc);
     return;
   }
-  throw new Error({
-    message: 'Invalid authentication',
-  });
+  throw new Error('Invalid authentication');
 }
 
 // action.owner

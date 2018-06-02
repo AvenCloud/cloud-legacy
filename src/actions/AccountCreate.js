@@ -21,17 +21,12 @@ export default async function AccountCreate(action) {
   const { authID } = authData;
 
   if (authData.authName && authData.authName !== authName) {
-    throw new Error({
-      message:
-        'An account already exists with this authentication info. Try logging in instead.',
-      path: 'authInfo',
-    });
+    throw new Error(
+      'An account already exists with this authentication info. Try logging in instead.',
+    );
   }
   if (await getAccount(domain, authName)) {
-    throw new Error({
-      message: 'An account already exists with this name.',
-      path: 'authName',
-    });
+    throw new Error('An account already exists with this name.');
   }
 
   const passwordHash = action.password

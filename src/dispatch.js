@@ -12,10 +12,7 @@ const actions = {
 export default async function dispatch(action) {
   const a = actions[action.type];
   if (!a) {
-    throw new Error({
-      message: `Action type "${action.type}" not found`,
-      path: 'type',
-    });
+    throw new Error(`Action type "${action.type}" not found`);
   }
   const validAction = await a.schema.strict().validate(action);
   return await a.default(validAction);

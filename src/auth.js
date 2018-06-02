@@ -11,10 +11,7 @@ export function getMethod(methodName) {
   if (methods[methodName]) {
     return methods[methodName];
   }
-  throw new Error({
-    message: `Auth method "${methodName}" is not supported`,
-    path: 'authMethod',
-  });
+  throw new Error(`Auth method "${methodName}" is not supported`);
 }
 
 export const PRIMARY_DOMAIN = process.env.CLOUD_PRIMARY_HOST || 'root';

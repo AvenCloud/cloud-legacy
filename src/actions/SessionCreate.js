@@ -20,10 +20,7 @@ export default async function SessionCreate(action) {
   const { authID } = authData;
 
   if (!authID || authData.authName !== authName) {
-    throw new Error({
-      message: 'Invalid Account!',
-      path: 'authName',
-    });
+    throw new Error('Invalid Account!');
   }
 
   const authSession = uuid();
