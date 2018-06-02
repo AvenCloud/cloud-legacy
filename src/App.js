@@ -6,7 +6,6 @@ const Button = ({ title, onPress }) => (
     <Text>{title}</Text>
   </TouchableOpacity>
 );
-
 const ScreenTitle = ({ children }) => <Text>{children}</Text>;
 const ScreenContainer = ({ children }) => <View>{children}</View>;
 
