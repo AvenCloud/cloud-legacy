@@ -20,6 +20,8 @@ jobs:
             - .gitignore
             - node_modules
             - .circleci
+
+
   test:
     docker:
       - image: circleci/node:8-stretch-browsers
@@ -67,7 +69,7 @@ workflows:
   deployment:
     jobs:
       - build
-      - test
+      - test:
           requires:
             - build
       - deploy:
