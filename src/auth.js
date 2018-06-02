@@ -1,4 +1,4 @@
-import { getAuth, putAuth, getSession, putSession, getAccount } from './data';
+import { getAuth, putAuth, getSession, getAccount } from './data';
 import { compareSecureString } from './utils';
 
 const methods = {
@@ -11,10 +11,10 @@ export function getMethod(methodName) {
   if (methods[methodName]) {
     return methods[methodName];
   }
-  throw {
+  throw new Error({
     message: `Auth method "${methodName}" is not supported`,
     path: 'authMethod',
-  };
+  });
 }
 
 export const PRIMARY_DOMAIN = process.env.CLOUD_PRIMARY_HOST || 'root';

@@ -5,7 +5,8 @@
     "start": "NODE_ENV=production node build/server.js",
     "dev": "razzle start",
     "build": "razzle build",
-    "test": "razzle test --env=jsdom"
+    "test": "razzle test --env=jsdom",
+    "precommit": "CI=true razzle build"
   },
   "dependencies": {
     "@google-cloud/pubsub": "^0.18.0",

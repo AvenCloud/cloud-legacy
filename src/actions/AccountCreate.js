@@ -1,4 +1,3 @@
-import { welcomeEmail } from '../email';
 import { getAccount, putAccount, putAuth, putSession } from '../data';
 import { uuid, hashSecureString } from '../utils';
 import { authVerify, PRIMARY_DOMAIN } from '../auth';
@@ -22,17 +21,17 @@ export default async function AccountCreate(action) {
   const { authID } = authData;
 
   if (authData.authName && authData.authName !== authName) {
-    throw {
+    throw new Error({
       message:
         'An account already exists with this authentication info. Try logging in instead.',
       path: 'authInfo',
-    };
+    });
   }
   if (await getAccount(domain, authName)) {
-    throw {
+    throw new Error({
       message: 'An account already exists with this name.',
       path: 'authName',
-    };
+    });
   }
 
   const passwordHash = action.password

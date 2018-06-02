@@ -29,7 +29,7 @@ server.post('/api', json(), async (req, res) => {
 });
 
 server.get('/*', (req, res) => {
-  const { path, query } = req;
+  // const { path, query } = req;
 
   const { element, getStyleElement } = AppRegistry.getApplication('App', {
     initialProps: {},

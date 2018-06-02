@@ -1,6 +1,3 @@
-const path = require('path');
-const fs = require('fs');
-
 const actions = {
   AuthRequest: require('./actions/AuthRequest'),
   AccountCreate: require('./actions/AccountCreate'),
@@ -15,10 +12,10 @@ const actions = {
 export default async function dispatch(action) {
   const a = actions[action.type];
   if (!a) {
-    throw {
+    throw new Error({
       message: `Action type "${action.type}" not found`,
       path: 'type',
-    };
+    });
   }
   const validAction = await a.schema.strict().validate(action);
   return await a.default(validAction);

@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
 
 const Button = ({ title, onPress }) => (
   <TouchableOpacity onPress={onPress}>
@@ -16,17 +10,17 @@ const Button = ({ title, onPress }) => (
 const ScreenTitle = ({ children }) => <Text>{children}</Text>;
 const ScreenContainer = ({ children }) => <View>{children}</View>;
 
-const LoginScreen = ({}) => (
+const LoginScreen = () => (
   <ScreenContainer>
     <ScreenTitle>Login</ScreenTitle>
   </ScreenContainer>
 );
-const LogoutScreen = ({}) => (
+const LogoutScreen = () => (
   <ScreenContainer>
     <ScreenTitle>Logout</ScreenTitle>
   </ScreenContainer>
 );
-const RegisterScreen = ({}) => (
+const RegisterScreen = () => (
   <ScreenContainer>
     <ScreenTitle>Register</ScreenTitle>
   </ScreenContainer>
@@ -59,7 +53,6 @@ class App extends React.Component {
     activeScreen: 'LoginScreen',
   };
   render() {
-    const { dispatch } = this.props;
     const ActiveScreen = screens[this.state.activeScreen];
     return (
       <View style={{ borderWidth: 12, borderColor: 'green' }}>

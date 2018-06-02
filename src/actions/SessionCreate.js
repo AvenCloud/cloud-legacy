@@ -1,8 +1,7 @@
-import { welcomeEmail } from '../email';
-import { getAccount, putAccount, putAuth, putSession } from '../data';
+import { putSession } from '../data';
 import { uuid } from '../utils';
 import { authVerify, PRIMARY_DOMAIN } from '../auth';
-import { isAuthName, authVerificationAction } from '../commonSchema';
+import { authVerificationAction } from '../commonSchema';
 import { object, string } from 'yup';
 
 export const schema = object()
@@ -21,10 +20,10 @@ export default async function SessionCreate(action) {
   const { authID } = authData;
 
   if (!authID || authData.authName !== authName) {
-    throw {
+    throw new Error({
       message: 'Invalid Account!',
       path: 'authName',
-    };
+    });
   }
 
   const authSession = uuid();

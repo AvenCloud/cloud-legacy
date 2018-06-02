@@ -16,5 +16,5 @@ export default async function SessionDestroy(action) {
 
   const domain = action.domain || PRIMARY_DOMAIN;
 
-  await putSession(domain, action.authSession, undefined);
+  await putSession(domain, authSession, undefined);
 }

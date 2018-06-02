@@ -1,11 +1,5 @@
 import { object, string, array, bool } from 'yup';
-import {
-  getAccount,
-  putAccount,
-  putDoc,
-  putDocMeta,
-  getDocMeta,
-} from '../data';
+import { putDoc, putDocMeta, getDocMeta } from '../data';
 import { PRIMARY_DOMAIN, verifySessionAuth } from '../auth';
 import {
   authenticatedAction,
@@ -31,9 +25,9 @@ export const schema = object()
 export default async function DocPut(action) {
   const { authName } = await verifySessionAuth(action);
   if (!authName) {
-    throw {
+    throw new Error({
       message: 'Invalid authentication',
-    };
+    });
   }
   const { owner, docName, doc, isPublic, permissions } = action;
   const domain = action.domain || PRIMARY_DOMAIN;
@@ -65,9 +59,9 @@ export default async function DocPut(action) {
     await putDoc(domain, owner, docName, doc);
     return;
   }
-  throw {
+  throw new Error({
     message: 'Invalid authentication',
-  };
+  });
 }
 
 // action.owner
