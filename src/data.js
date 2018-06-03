@@ -1,4 +1,4 @@
-const { useTestClient } = require('./config');
+const { useTestClient, config } = require('./config');
 
 const path = require('path');
 
@@ -31,13 +31,13 @@ function getMinioClient() {
   const Minio = require('minio');
 
   const m = new Minio.Client({
-    endPoint: process.env.STORAGE_HOST,
-    secure: !!process.env.STORAGE_SECURE,
-    accessKey: process.env.STORAGE_ACCESS,
-    secretKey: process.env.STORAGE_KEY,
+    endPoint: config.STORAGE_HOST,
+    secure: !!config.STORAGE_SECURE,
+    accessKey: config.STORAGE_ACCESS,
+    secretKey: config.STORAGE_KEY,
   });
 
-  const bucket = process.env.STORAGE_BUCKET;
+  const bucket = config.STORAGE_BUCKET;
 
   return {
     list() {

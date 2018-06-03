@@ -33,7 +33,7 @@ const screens = {
 
 const LinkBar = ({ onLink }) => {
   const links = Object.keys(screens).map(screenName => (
-    <View style={{ padding: 20 }}>
+    <View style={{ padding: 20 }} key={screenName}>
       <Button
         key={screenName}
         onPress={() => {
@@ -56,12 +56,14 @@ class App extends React.Component {
     return (
       <View style={{ borderWidth: 12, borderColor: 'green' }}>
         <Button title="ugh" onPress={() => {}} />
-        <a
-          onClick={() => {
-            console.log('shit');
-          }}>
-          shit
-        </a>
+        <iframe
+          title="Video Player"
+          src="https://player.vimeo.com/video/273159143"
+          width="640"
+          height="360"
+          frameBorder="0"
+          allowFullScreen
+        />
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{
@@ -70,8 +72,6 @@ class App extends React.Component {
           }}>
           <LinkBar
             onLink={activeScreen => {
-              debugger;
-              console.log('ok wtf', activeScreen);
               this.setState({ activeScreen });
             }}
           />
