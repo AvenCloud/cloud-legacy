@@ -1,3 +1,5 @@
+console.log('Starter Env varaibles: ' + JSON.stringify(process.env));
+
 const dotenv = require('dotenv');
 const { readFileSync } = require('fs');
 const { join } = require('path');
@@ -16,3 +18,5 @@ export const config = {
   ...envConfig,
   ...process.env,
 };
+
+console.log('Final Config' + JSON.stringify(config));
