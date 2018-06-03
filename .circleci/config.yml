@@ -62,7 +62,7 @@ jobs:
             echo "CLOUD_PRIMARY_HOST=aven.cloud" >> ./.env
 
             # Main app deployment:
-            sudo /opt/google-cloud-sdk/bin/gcloud app deploy --project $GCLOUD_PROJECT
+            sudo /opt/google-cloud-sdk/bin/gcloud app deploy --project $GCLOUD_PROJECT --stop-previous-version
 
 workflows:
   version: 2

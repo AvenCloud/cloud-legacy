@@ -5,14 +5,15 @@ import { AppRegistry } from 'react-native';
 import dispatch from './dispatch';
 import App from './App';
 
+const assets = require(process.env.RAZZLE_ASSETS_MANIFEST);
+
 console.log('Pain from production. ', {
   RAZZLE_ASSETS_MANIFEST: process.env.RAZZLE_ASSETS_MANIFEST,
   RAZZLE_PUBLIC_DIR: process.env.RAZZLE_PUBLIC_DIR,
   cwd: process.cwd(),
   __dirname: __dirname,
+  assets: assets,
 });
-
-const assets = require(process.env.RAZZLE_ASSETS_MANIFEST);
 
 const server = express();
 
