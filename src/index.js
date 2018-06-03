@@ -7,12 +7,10 @@ const server = http.createServer(app);
 
 let currentApp = app;
 
-const port = 8080; // I don't want to hardcode this but GAE refuses to work..
-
 console.log('process.env.CLOUD_HTTP_PORT : ' + process.env.CLOUD_HTTP_PORT);
 console.log('process.env.PORT : ' + process.env.PORT);
-console.log('Unfortunately opening the hardcoded port ' + port);
-// const port = process.env.CLOUD_HTTP_PORT || process.env.PORT;
+const port = process.env.CLOUD_HTTP_PORT || process.env.PORT;
+console.log('Using ' + port + ' ' + typeof port);
 
 server.listen(port, error => {
   if (error) {

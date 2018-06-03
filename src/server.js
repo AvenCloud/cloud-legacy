@@ -13,6 +13,7 @@ console.log('Pain from production. ', {
   cwd: process.cwd(),
   __dirname: __dirname,
   assets: assets,
+  allEnv: process.env,
 });
 
 const server = express();
