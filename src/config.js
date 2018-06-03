@@ -2,8 +2,9 @@ const dotenv = require('dotenv');
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
+let envConfig = {};
 try {
-  const envConfig = dotenv.parse(readFileSync(join(process.cwd(), '.env')));
+  envConfig = dotenv.parse(readFileSync(join(process.cwd(), '.env')));
   for (var k in envConfig) {
     process.env[k] = envConfig[k];
   }
