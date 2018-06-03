@@ -17,7 +17,7 @@ export async function request(authID, authInfo, lastAuthData) {
 
   // check if lastAuthData already has a pending verification out on it, with verificationRequestTime
 
-  const code = await genAuthCode();
+  const verificationCode = await genAuthCode();
 
   await welcomeEmail({
     email,
