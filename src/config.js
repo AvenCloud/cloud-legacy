@@ -12,11 +12,19 @@ try {
   }
 } catch (e) {}
 
-export const useTestClient = process.env.NODE_ENV === 'test'; // todo, test both clients
+const isTestEnv = process.env.NODE_ENV === 'test';
 
-export const config = {
+export const useTestClient = isTestEnv; // todo, test both clients
+
+const inputConfig = {
   ...envConfig,
   ...process.env,
+};
+
+export const config = {
+  ...inputConfig,
+  SENDGRID_KEY: isTestEnv ? null : inputConfig.SENDGRID_KEY,
+  isTestEnv,
 };
 
 console.log('Final Config' + JSON.stringify(config));

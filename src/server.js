@@ -20,9 +20,7 @@ const server = express();
 
 AppRegistry.registerComponent('App', () => App);
 
-server
-  .disable('x-powered-by')
-  .use(express.static(process.env.RAZZLE_PUBLIC_DIR));
+server.disable('x-powered-by').use(express.static('./public'));
 
 server.post('/api', json(), async (req, res) => {
   try {

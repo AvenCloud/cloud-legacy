@@ -1,11 +1,19 @@
 import { getAuth, putAuth, getSession, getAccount } from './data';
 import { compareSecureString } from './utils';
+import { config } from './config';
 
-const methods = {
-  TestCode: require('./authMethods/TestCode'),
-  // EmailCode: require('./authMethods/EmailCode'),
-  // SMSCode: require('./authMethods/SMSCode'),
-};
+function getAuthMethods() {
+  if (config.SENDGRID_KEY) {
+    return {
+      EmailCode: require('./authMethods/EmailCode'),
+    };
+  }
+  return {
+    TestCode: require('./authMethods/TestCode'),
+  };
+}
+
+const methods = getAuthMethods();
 
 export function getMethod(methodName) {
   if (methods[methodName]) {
