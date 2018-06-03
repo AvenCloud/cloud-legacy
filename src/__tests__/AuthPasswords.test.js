@@ -2,14 +2,18 @@ import dispatch from '../dispatch';
 import { remove } from 'fs-extra';
 import { getTestCode } from '../authMethods/TestCode';
 import { initAuth } from '../authTestUtils';
+import uuid from 'uuid/v1';
 
+let domain = null;
 let sessionInfo = {};
 
 beforeEach(async () => {
-  sessionInfo = await initAuth('tester');
+  domain = uuid();
+  sessionInfo = await initAuth(domain, 'tester');
 });
 
 test('Account create and login with password', async () => {
+  const newUserAuthName = uuid();
   const authRequest = await dispatch({
     type: 'AuthRequest',
     authMethod: 'TestCode',
@@ -22,6 +26,7 @@ test('Account create and login with password', async () => {
 
   await dispatch({
     type: 'AccountCreate',
+    domain,
     authName: 'tester2',
     password: 'mysecret',
     authMethod: authRequest.authMethod,
@@ -35,6 +40,7 @@ test('Account create and login with password', async () => {
 
   const session = await dispatch({
     type: 'SessionCreate',
+    domain,
     authName: 'tester2',
     authMethod: 'Password',
     authInfo: {
@@ -50,6 +56,7 @@ test('Account create and login with password', async () => {
 
   const accountGetRequest = await dispatch({
     type: 'AccountGet',
+    domain,
     name: 'tester2',
     authName: 'tester2',
     authSession: session.authSession,

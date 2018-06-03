@@ -2,13 +2,14 @@ import dispatch from '../dispatch';
 import { remove } from 'fs-extra';
 import { getTestCode } from '../authMethods/TestCode';
 import { initAuth, createTestUser } from '../authTestUtils';
+import uuid from 'uuid/v1';
 
-let sessionInfo = {};
 let domain = null;
+let sessionInfo = {};
 
 beforeEach(async () => {
-  sessionInfo = await initAuth('tester');
-  domain = sessionInfo.domain;
+  domain = uuid();
+  sessionInfo = await initAuth(domain, 'tester');
 });
 
 test('Empty doc get', async () => {

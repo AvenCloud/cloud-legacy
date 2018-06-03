@@ -37,7 +37,6 @@ const LinkBar = ({ onLink }) => {
       <Button
         key={screenName}
         onPress={() => {
-          console.log('dude');
           onLink(screenName);
         }}
         title={screenName + ' ok'}

@@ -1,7 +1,6 @@
 import dispatch from './dispatch';
 import { remove } from 'fs-extra';
 import { getTestCode } from './authMethods/TestCode';
-import uuid from 'uuid/v1';
 
 export async function createTestUser(domain, authName, email) {
   const authInfo = { email };
@@ -25,9 +24,7 @@ export async function createTestUser(domain, authName, email) {
   return { authName, authSession, authKey, domain };
 }
 
-export async function initAuth(username) {
-  await remove('./test-data');
-  const domain = `test-domain-${uuid()}`;
+export async function initAuth(domain, username) {
   const authName = username || 'tester';
   const email = `test@email.com`;
   return createTestUser(domain, authName, email);

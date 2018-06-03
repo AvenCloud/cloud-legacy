@@ -2,16 +2,20 @@ import dispatch from '../dispatch';
 import { remove } from 'fs-extra';
 import { getTestCode } from '../authMethods/TestCode';
 import { initAuth } from '../authTestUtils';
+import uuid from 'uuid/v1';
 
+let domain = null;
 let sessionInfo = {};
 
 beforeEach(async () => {
-  sessionInfo = await initAuth('tester');
+  domain = uuid();
+  sessionInfo = await initAuth(domain, 'tester');
 });
 
 test('Auth core', async () => {
   const accountGetRequest = await dispatch({
     type: 'AccountGet',
+    domain,
     name: 'tester',
     ...sessionInfo,
   });
@@ -22,20 +26,22 @@ test('Auth core', async () => {
 test('Basic account creation flow', async () => {
   const authRequest = await dispatch({
     type: 'AuthRequest',
+    domain,
     authMethod: 'TestCode',
     authInfo: {
-      email: 'test@email.com',
+      email: 'zoom@email.com',
     },
   });
-  const testCode = getTestCode('test@email.com');
+  const testCode = getTestCode('zoom@email.com');
   expect(typeof testCode).toBe('string');
 
   const accountCreationRequest = await dispatch({
     type: 'AccountCreate',
+    domain,
     authName: 'tester2',
     authMethod: authRequest.authMethod,
     authInfo: {
-      email: 'test@email.com',
+      email: 'zoom@email.com',
     },
     authResponse: {
       verificationCode: testCode,
@@ -46,6 +52,7 @@ test('Basic account creation flow', async () => {
 
   const accountGetRequest = await dispatch({
     type: 'AccountGet',
+    domain,
     name: 'tester2',
     authName: 'tester2',
     authSession: accountCreationRequest.authSession,
