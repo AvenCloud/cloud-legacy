@@ -1,6 +1,7 @@
 const { useTestClient, config } = require('./config');
 
 const path = require('path');
+const getRawBody = require('raw-body');
 
 function getTestClient() {
   const fs = require('fs-extra');
@@ -40,6 +41,19 @@ function getMinioClient() {
   const bucket = config.STORAGE_BUCKET;
 
   return {
+    async getFile(name) {
+      const data = await m.getObject(bucket, name);
+      return await getRawBody(data);
+    },
+    async putFile(name, buffer) {
+      const data = new stream.Writable();
+      data.end(buffer);
+      await m.putObject(bucket, name, data);
+    },
+    async destroyFile(name) {
+      await m.removeObject(bucket, name);
+    },
+
     list() {
       const objectStream = m.listObjects(bucket);
       const files = [];

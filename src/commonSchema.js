@@ -50,7 +50,11 @@ export const optionallyAuthenticatedAction = {
   // todo, make this actually different
   ...authenticatedAction,
 };
-export const isAuthMethod = string().oneOf(['TestCode', 'Password']);
+export const isAuthMethod = string().oneOf([
+  'TestCode',
+  'EmailCode',
+  'Password',
+]);
 
 export const authVerificationAction = {
   authName: isAuthName,

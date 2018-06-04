@@ -1,11 +1,12 @@
 import { object, string } from 'yup';
 import { authRequest } from '../auth';
+import { isAuthMethod } from '../commonSchema';
 
 export const schema = object()
   .noUnknown()
   .shape({
     type: string().oneOf(['AuthRequest']),
-    authMethod: string().oneOf(['TestCode']),
+    authMethod: isAuthMethod,
     authInfo: object(),
     domain: string().notRequired(),
   });

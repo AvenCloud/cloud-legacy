@@ -16,7 +16,9 @@
     "dotenv": "^5.0.1",
     "express": "^4.16.3",
     "gun": "^0.9.997",
+    "helmet": "^3.12.1",
     "minio": "^5.0.2",
+    "raw-body": "^2.3.3",
     "razzle": "^2.0.0-alpha.12",
     "react": "^16.4.0",
     "react-art": "^16.4.0",
@@ -25,6 +27,7 @@
     "react-native-paper": "^1.9.1",
     "react-native-web": "^0.7.3",
     "uuid": "^3.2.1",
+    "yes-https": "^0.0.4",
     "yup": "^0.25.1"
   }
 }

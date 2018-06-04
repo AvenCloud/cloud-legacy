@@ -5,6 +5,9 @@ import { AppRegistry } from 'react-native';
 import dispatch from './dispatch';
 import App from './App';
 
+const yes = require('yes-https');
+const helmet = require('helmet');
+
 const assets = require(process.env.RAZZLE_ASSETS_MANIFEST);
 
 console.log('Pain from production. ', {
@@ -17,10 +20,11 @@ console.log('Pain from production. ', {
 });
 
 const server = express();
+server.use(helmet());
+server.use(yes());
+server.use(express.static(process.env.RAZZLE_PUBLIC_DIR));
 
 AppRegistry.registerComponent('App', () => App);
-
-server.disable('x-powered-by').use(express.static('./public'));
 
 server.post('/api', json(), async (req, res) => {
   try {
