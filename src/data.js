@@ -1,5 +1,6 @@
 const { useTestClient, config } = require('./config');
 
+const stream = require('stream');
 const path = require('path');
 const getRawBody = require('raw-body');
 
