@@ -60,7 +60,7 @@ jobs:
             echo "PRIMARY_HOST=$PRIMARY_HOST" >> ./.env
             echo "CLOUD_HTTP_PORT=8080" >> ./.env
             echo "CLOUD_PRIMARY_HOST=aven.cloud" >> ./.env
-            echo "RAZZLE_PUBLIC_DIR=/app/build/public" >> ./.env
+            echo "CLOUD_APP_PUBLIC_DIR=/app/build/public" >> ./.env
 
             # Main app deployment:
             sudo /opt/google-cloud-sdk/bin/gcloud app deploy --project $GCLOUD_PROJECT --stop-previous-version

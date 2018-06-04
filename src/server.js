@@ -5,24 +5,28 @@ import { AppRegistry } from 'react-native';
 import dispatch from './dispatch';
 import App from './App';
 
+const { config } = require('./config');
 const yes = require('yes-https');
 const helmet = require('helmet');
 
 const assets = require(process.env.RAZZLE_ASSETS_MANIFEST);
+const staticDir = config.CLOUD_APP_PUBLIC_DIR || process.env.RAZZLE_PUBLIC_DIR;
 
 console.log('Pain from production. ', {
   RAZZLE_ASSETS_MANIFEST: process.env.RAZZLE_ASSETS_MANIFEST,
   RAZZLE_PUBLIC_DIR: process.env.RAZZLE_PUBLIC_DIR,
+  CLOUD_APP_PUBLIC_DIR: config.CLOUD_APP_PUBLIC_DIR,
   cwd: process.cwd(),
   __dirname: __dirname,
   assets: assets,
-  allEnv: process.env,
+  config,
+  staticDir,
 });
 
 const server = express();
 server.use(helmet());
 server.use(yes());
-server.use(express.static(process.env.RAZZLE_PUBLIC_DIR));
+server.use(express.static(staticDir));
 
 AppRegistry.registerComponent('App', () => App);
 

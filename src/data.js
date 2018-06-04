@@ -1,6 +1,6 @@
 const { useTestClient, config } = require('./config');
 
-const stream = require('stream');
+const Readable = require('stream').Readable;
 const path = require('path');
 const getRawBody = require('raw-body');
 
@@ -43,13 +43,18 @@ function getMinioClient() {
 
   return {
     async getFile(name) {
-      const data = await m.getObject(bucket, name);
-      return await getRawBody(data);
+      try {
+        const data = await m.getObject(bucket, name);
+        return await getRawBody(data);
+      } catch (e) {
+        return null;
+      }
     },
     async putFile(name, buffer) {
-      const data = new stream.Writable();
-      data.end(buffer);
-      await m.putObject(bucket, name, data);
+      var s = new Readable();
+      s.push(buffer);
+      s.push(null);
+      await m.putObject(bucket, name, s);
     },
     async destroyFile(name) {
       await m.removeObject(bucket, name);
