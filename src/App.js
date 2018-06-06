@@ -2,8 +2,8 @@ import React from 'react';
 import {
   // ScrollView,
   View,
-  Text,
-  TouchableOpacity,
+  // Text,
+  // TouchableOpacity,
   StyleSheet,
   Image,
 } from 'react-native';
