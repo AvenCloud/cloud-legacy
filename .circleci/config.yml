@@ -10,8 +10,6 @@ jobs:
       - run:
           name: 'Build with Razzle+Webpack'
           command: yarn build
-          environment:
-            CI: false
       - persist_to_workspace:
           root: ~/aven-cloud
           paths:
