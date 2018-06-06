@@ -1,5 +1,23 @@
 import React from 'react';
-import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import {
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+} from 'react-native';
+
+const Video = ({ vimeoId }) => (
+  <iframe
+    title="Video Player"
+    src={`https://player.vimeo.com/video/${vimeoId}`}
+    width="1280"
+    height="720"
+    frameBorder="0"
+    allowFullScreen
+  />
+);
 
 const Button = ({ title, onPress }) => (
   <TouchableOpacity onPress={onPress}>
@@ -9,76 +27,57 @@ const Button = ({ title, onPress }) => (
 const ScreenTitle = ({ children }) => <Text>{children}</Text>;
 const ScreenContainer = ({ children }) => <View>{children}</View>;
 
-const LoginScreen = () => (
-  <ScreenContainer>
-    <ScreenTitle>Login</ScreenTitle>
-  </ScreenContainer>
-);
-const LogoutScreen = () => (
-  <ScreenContainer>
-    <ScreenTitle>Logout</ScreenTitle>
-  </ScreenContainer>
-);
-const RegisterScreen = () => (
-  <ScreenContainer>
-    <ScreenTitle>Register</ScreenTitle>
-  </ScreenContainer>
-);
-
-const screens = {
-  LoginScreen,
-  LogoutScreen,
-  RegisterScreen,
-};
-
-const LinkBar = ({ onLink }) => {
-  const links = Object.keys(screens).map(screenName => (
-    <View style={{ padding: 20 }} key={screenName}>
-      <Button
-        key={screenName}
-        onPress={() => {
-          onLink(screenName);
-        }}
-        title={screenName + ' ok'}
-      />
-    </View>
-  ));
-  return <View style={{ flexDirection: 'row', borderWidth: 2 }}>{links}</View>;
-};
-
 class App extends React.Component {
-  state = {
-    activeScreen: 'LoginScreen',
-  };
   render() {
-    const ActiveScreen = screens[this.state.activeScreen];
     return (
-      <View style={{ borderWidth: 12, borderColor: 'green' }}>
-        <Button title="ugh" onPress={() => {}} />
-        <iframe
-          title="Video Player"
-          src="https://player.vimeo.com/video/273159143"
-          width="640"
-          height="360"
-          frameBorder="0"
-          allowFullScreen
-        />
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            justifyContent: 'center',
-            minHeight: '100%',
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        <View
+          style={{
+            width: '100%',
+            maxHeight: 460,
+            flex: 1,
+            marginVertical: 100,
+            position: 'relative',
           }}>
-          <LinkBar
-            onLink={activeScreen => {
-              this.setState({ activeScreen });
+          <Image
+            source={require('./images/cloudGlamour.png')}
+            style={{
+              ...StyleSheet.absoluteFillObject,
+              resizeMode: 'contain',
             }}
           />
-          {ActiveScreen && <ActiveScreen />}
-        </ScrollView>
+          <View
+            style={{
+              ...StyleSheet.absoluteFillObject,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Image
+              source={require('./images/AvenLogoPlain.png')}
+              style={{
+                resizeMode: 'contain',
+                width: '100%',
+                height: '18%',
+              }}
+            />
+          </View>
+        </View>
       </View>
     );
   }
 }
 
+// {/* <ScrollView
+//   style={StyleSheet.absoluteFill}
+//   contentContainerStyle={{
+//     justifyContent: 'center',
+//     minHeight: '100%',
+//   }}>
+//   <LinkBar
+//     onLink={activeScreen => {
+//       this.setState({ activeScreen });
+//     }}
+//   />
+//   {ActiveScreen && <ActiveScreen />}
+// </ScrollView> */}
 export default App;
