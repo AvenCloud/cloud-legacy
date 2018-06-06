@@ -7,8 +7,11 @@ jobs:
     working_directory: ~/aven-cloud
     steps:
       - checkout
-      - run: yarn
-      - run: yarn build
+      - run:
+          name: 'Build with Razzle+Webpack'
+          command: yarn build
+          environment:
+            CI: false
       - persist_to_workspace:
           root: ~/aven-cloud
           paths:
