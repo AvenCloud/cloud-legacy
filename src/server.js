@@ -7,7 +7,7 @@ import App from './App';
 
 const { config } = require('./config');
 const yes = require('yes-https');
-const fs = require('fs');
+const fs = require('fs-extra');
 const helmet = require('helmet');
 
 const assets = require(process.env.RAZZLE_ASSETS_MANIFEST);
@@ -22,8 +22,22 @@ console.log('Pain from production. ', {
   assets: assets,
   // config,
   staticDir,
-  staticDirFiles: fs.readdirSync(staticDir),
 });
+
+(async () => {
+  return {
+    isDirectory: (await fs.stat(staticDir)).isDirectory(),
+    staticDirFiles: await fs.readdir(staticDir),
+  };
+})()
+  .then(t => {
+    console.log('PUBLIC DIR INFO');
+    console.log(t);
+  })
+  .catch(e => {
+    console.error('Cannot read public dir!');
+    console.error(e);
+  });
 
 const server = express();
 server.use(helmet());
