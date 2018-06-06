@@ -7,6 +7,7 @@ import App from './App';
 
 const { config } = require('./config');
 const yes = require('yes-https');
+const fs = require('fs');
 const helmet = require('helmet');
 
 const assets = require(process.env.RAZZLE_ASSETS_MANIFEST);
@@ -19,8 +20,9 @@ console.log('Pain from production. ', {
   cwd: process.cwd(),
   __dirname: __dirname,
   assets: assets,
-  config,
+  // config,
   staticDir,
+  staticDirFiles: fs.readdirSync(staticDir),
 });
 
 const server = express();

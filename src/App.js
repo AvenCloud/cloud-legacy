@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  ScrollView,
+  // ScrollView,
   View,
   Text,
   TouchableOpacity,
@@ -8,24 +8,24 @@ import {
   Image,
 } from 'react-native';
 
-const Video = ({ vimeoId }) => (
-  <iframe
-    title="Video Player"
-    src={`https://player.vimeo.com/video/${vimeoId}`}
-    width="1280"
-    height="720"
-    frameBorder="0"
-    allowFullScreen
-  />
-);
+// const Video = ({ vimeoId }) => (
+//   <iframe
+//     title="Video Player"
+//     src={`https://player.vimeo.com/video/${vimeoId}`}
+//     width="1280"
+//     height="720"
+//     frameBorder="0"
+//     allowFullScreen
+//   />
+// );
 
-const Button = ({ title, onPress }) => (
-  <TouchableOpacity onPress={onPress}>
-    <Text>{title}</Text>
-  </TouchableOpacity>
-);
-const ScreenTitle = ({ children }) => <Text>{children}</Text>;
-const ScreenContainer = ({ children }) => <View>{children}</View>;
+// const Button = ({ title, onPress }) => (
+//   <TouchableOpacity onPress={onPress}>
+//     <Text>{title}</Text>
+//   </TouchableOpacity>
+// );
+// const ScreenTitle = ({ children }) => <Text>{children}</Text>;
+// const ScreenContainer = ({ children }) => <View>{children}</View>;
 
 class App extends React.Component {
   render() {
