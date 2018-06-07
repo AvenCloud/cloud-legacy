@@ -13,32 +13,6 @@ const helmet = require('helmet');
 const assets = require(process.env.RAZZLE_ASSETS_MANIFEST);
 const staticDir = config.CLOUD_APP_PUBLIC_DIR || process.env.RAZZLE_PUBLIC_DIR;
 
-console.log('Pain from production. ', {
-  RAZZLE_ASSETS_MANIFEST: process.env.RAZZLE_ASSETS_MANIFEST,
-  RAZZLE_PUBLIC_DIR: process.env.RAZZLE_PUBLIC_DIR,
-  CLOUD_APP_PUBLIC_DIR: config.CLOUD_APP_PUBLIC_DIR,
-  cwd: process.cwd(),
-  __dirname: __dirname,
-  assets: assets,
-  // config,
-  staticDir,
-});
-
-(async () => {
-  return {
-    isDirectory: (await fs.stat(staticDir)).isDirectory(),
-    staticDirFiles: await fs.readdir(staticDir),
-  };
-})()
-  .then(t => {
-    console.log('PUBLIC DIR INFO');
-    console.log(t);
-  })
-  .catch(e => {
-    console.error('Cannot read public dir!');
-    console.error(e);
-  });
-
 const server = express();
 server.use(helmet());
 server.use(yes());

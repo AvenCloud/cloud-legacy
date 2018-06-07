@@ -1,6 +1,8 @@
 import { object, string, array, bool } from 'yup';
 import { putDoc, putDocMeta, getDocMeta } from '../data';
 import { PRIMARY_DOMAIN, verifySessionAuth } from '../auth';
+import { publish, subscribe } from '../pubsub';
+import { config } from '../config';
 import {
   authenticatedAction,
   isDocName,
@@ -22,6 +24,17 @@ export const schema = object()
     ...authenticatedAction,
   });
 
+subscribe('doc-will-update', msg => {
+  console.log('DocPut doc-will-update' + config.INSTANCE_ID, {
+    msg,
+  });
+});
+subscribe('doc-did-update', msg => {
+  console.log('DocPut doc-did-update ' + config.INSTANCE_ID, {
+    msg,
+  });
+});
+
 export default async function DocPut(action) {
   const { authName } = await verifySessionAuth(action);
   if (!authName) {
@@ -29,8 +42,19 @@ export default async function DocPut(action) {
   }
   const { owner, docName, doc, isPublic, permissions } = action;
   const domain = action.domain || PRIMARY_DOMAIN;
+  const willUpdatePayload = {
+    type: 'WillUpdate',
+    docName,
+    owner,
+  };
+  const didUpdatePayload = {
+    ...willUpdatePayload,
+    type: 'DidUpdate',
+  };
+  let docId = undefined;
   if (owner === authName) {
     if (isPublic != null || permissions != null) {
+      publish('doc-will-update', willUpdatePayload);
       const metaDoc = await getDocMeta(domain, authName, docName);
       const lastMeta = metaDoc || {};
       const meta = {
@@ -39,11 +63,12 @@ export default async function DocPut(action) {
         permissions: permissions || lastMeta.permissions || [],
       };
       await putDocMeta(domain, authName, docName, meta);
+      publish('doc-did-update', didUpdatePayload);
     }
     if (doc) {
-      await putDoc(domain, authName, docName, doc);
+      docId = await putDoc(domain, authName, docName, doc);
     }
-    return;
+    return { ...lastMeta, owner, docName, docId };
   }
   const docMeta = await getDocMeta(domain, owner, docName);
 
@@ -54,8 +79,11 @@ export default async function DocPut(action) {
       rule => rule.account === authName && rule.role === 'write',
     )
   ) {
-    await putDoc(domain, owner, docName, doc);
-    return;
+    publish('doc-will-update', willUpdatePayload);
+    docId = didUpdatePayload.docId = await putDoc(domain, owner, docName, doc);
+
+    publish('doc-did-update', didUpdatePayload);
+    return { ...docMeta, owner, docName, docId };
   }
   throw new Error('Invalid authentication');
 }

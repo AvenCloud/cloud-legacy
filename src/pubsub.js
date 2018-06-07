@@ -1,4 +1,4 @@
-require('./config');
+import { config } from './config';
 
 const { useTestClient } = require('./config');
 
@@ -28,10 +28,6 @@ function getTestClient() {
 function getGCSClient() {
   const PubSub = require(`@google-cloud/pubsub`);
   const pubsub = new PubSub();
-  console.log(
-    'Starting google cloud pubsub ' +
-      process.env.GOOGLE_APPLICATION_CREDENTIALS,
-  );
 
   // DO NOT FORGET TO CREATE THE TOPIC + SUBSCRIPTION!
   // // gcloud pubsub topics create my-topic
@@ -42,20 +38,26 @@ function getGCSClient() {
       const { publish } = pubsub.topic('session-destroy').publisher();
       const messageData = Buffer.from(JSON.stringify(message));
       publish(messageData);
-      console.log('Published to ' + topic, message);
+      console.log(`${config.INSTANCE_ID} Published to ${topic}`, message);
     },
     subscribe(topic, handler) {
       const subscription = pubsub.subscription(`${topic}-subscription`);
       const messageHandler = cloudMessage => {
         const message = JSON.parse(cloudMessage.data);
-        console.log('Message from ' + topic, message);
+        console.log(
+          `${config.INSTANCE_ID} Recieved message from ${topic}`,
+          message,
+        );
         handler(message);
         cloudMessage.ack();
       };
       subscription.on(`message`, messageHandler);
-      console.log('Subscribed to ' + topic);
+      console.log(`${config.INSTANCE_ID} subscribed to ${topic}`);
       return {
         remove() {
+          console.log(
+            `${config.INSTANCE_ID} Removing subscription from ${topic}`,
+          );
           subscription.removeListener('message', messageHandler);
           console.log('Subscription removed from ' + topic);
         },

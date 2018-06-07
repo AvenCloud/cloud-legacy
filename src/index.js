@@ -1,23 +1,18 @@
 import app from './server';
+import { config } from './config';
 import http from 'http';
-
-require('dotenv').config();
 
 const server = http.createServer(app);
 
 let currentApp = app;
 
-console.log('process.env.CLOUD_HTTP_PORT : ' + process.env.CLOUD_HTTP_PORT);
-console.log('process.env.PORT : ' + process.env.PORT);
-const port = process.env.CLOUD_HTTP_PORT || process.env.PORT;
-console.log('Using ' + port + ' ' + typeof port);
-
-server.listen(port, error => {
+server.listen(config.PORT, error => {
   if (error) {
     console.log(error);
+    return;
   }
 
-  console.log('App started on ' + port);
+  console.log(`Started instance ${config.INSTANCE_ID} on port ${config.PORT}`);
 });
 
 if (module.hot) {

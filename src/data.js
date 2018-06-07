@@ -1,4 +1,5 @@
-const { useTestClient, config } = require('./config');
+import { useTestClient, config } from './config';
+import { checksumFile } from './fsUtils';
 
 const Readable = require('stream').Readable;
 const path = require('path');
@@ -21,7 +22,12 @@ function getTestClient() {
       }
     },
     async putFile(name, buffer) {
-      return await fs.outputFile(path.join(testDir, name), buffer);
+      const outPath = path.join(testDir, name);
+      await fs.outputFile(outPath, buffer);
+
+      const etag = await checksumFile(outPath);
+      console.log('wat', etag);
+      return etag;
     },
     async destroyFile(name) {
       return await fs.remove(path.join(testDir, name));
@@ -54,7 +60,7 @@ function getMinioClient() {
       var s = new Readable();
       s.push(buffer);
       s.push(null);
-      await m.putObject(bucket, name, s);
+      const eTag = await m.putObject(bucket, name, s);
     },
     async destroyFile(name) {
       await m.removeObject(bucket, name);
@@ -90,7 +96,7 @@ export async function putObject(id, data) {
     return await client.destroyFile(id);
   }
   const fileData = JSON.stringify(data);
-  await client.putFile(id, fileData);
+  return await client.putFile(id, fileData);
 }
 
 const dataIDforAccount = (domain, accountID) =>
