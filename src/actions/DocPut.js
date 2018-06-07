@@ -39,7 +39,7 @@ subscribe('doc-did-update', msg => {
 });
 
 export default async function DocPut(action) {
-  const updateTime = Date.now();
+  // const updateTime = Date.now();
   const { authName } = await verifySessionAuth(action);
   if (!authName) {
     throw new Error('Invalid Authentication');
@@ -50,7 +50,7 @@ export default async function DocPut(action) {
   const domain = action.domain || PRIMARY_DOMAIN;
   const metaDocData = (await getDocMeta(domain, owner, docName)) || {};
   const metaDoc = { ...metaDocData, docName, owner, domain };
-  const { canRead, canWrite, canAdmin } = getPermissions(metaDoc, authName);
+  const { canWrite, canAdmin } = getPermissions(metaDoc, authName);
   const outputMeta = { ...metaDoc };
   if (!canWrite) {
     throw new Error('Invalid Authentication');
@@ -73,14 +73,13 @@ export default async function DocPut(action) {
     outputMeta.docId = await putDoc(domain, authName, docName, outputDoc);
   }
 
-  if (action.isPublic || action.permissions) {
+  if (isPublic != null || permissions) {
     if (!canAdmin) {
       throw new Error('Invalid Authentication');
     }
-    outputMeta.isPublic =
-      action.isPublic == null ? outputMeta.isPublic : action.isPublic;
+    outputMeta.isPublic = isPublic == null ? outputMeta.isPublic : isPublic;
     outputMeta.permissions =
-      action.permissions == null ? outputMeta.permissions : action.permissions;
+      permissions == null ? outputMeta.permissions : permissions;
   }
 
   // perhaps transfer logic, plz test this:

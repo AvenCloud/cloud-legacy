@@ -1,6 +1,6 @@
 import { useTestClient, config } from './config';
 import { checksumFile } from './fsUtils';
-import { publish, subscribe } from './pubsub';
+// import { publish, subscribe } from './pubsub';
 
 const Readable = require('stream').Readable;
 const path = require('path');

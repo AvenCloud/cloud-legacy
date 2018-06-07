@@ -7,7 +7,6 @@ import App from './App';
 
 const { config } = require('./config');
 const yes = require('yes-https');
-const fs = require('fs-extra');
 const helmet = require('helmet');
 
 const assets = require(process.env.RAZZLE_ASSETS_MANIFEST);
