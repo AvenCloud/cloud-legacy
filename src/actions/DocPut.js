@@ -1,5 +1,5 @@
 import { object, string, array, bool } from 'yup';
-import { putDoc, copyDoc, putDocMeta, getDocMeta } from '../data';
+import { putDoc, putDocMeta, getDocMeta } from '../data';
 import { PRIMARY_DOMAIN, verifySessionAuth } from '../auth';
 import { publish, subscribe } from '../pubsub';
 import { getPermissions } from '../permission';
@@ -9,7 +9,6 @@ import {
   isDocName,
   isAuthName,
   isPermissionRule,
-  isDocId,
 } from '../commonSchema';
 
 export const schema = object()
