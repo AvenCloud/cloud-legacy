@@ -1,4 +1,4 @@
-import { getObject, putObject } from '../data';
+import { getObject, copyObject, putObject } from '../data';
 import uuid from 'uuid/v1';
 
 test('env', () => {
@@ -32,4 +32,16 @@ test('putObject returns a consistent checksum', async () => {
 test('Unknown getObject results in null', async () => {
   const result = await getObject(uuid());
   expect(result).toBe(null);
+});
+
+test('copyObject', async () => {
+  const from = uuid();
+  const to = uuid();
+  const testObj0 = { foo: 'bar' };
+  const eTag0 = await putObject(from, testObj0);
+  const eTag1 = await copyObject(from, to);
+  expect(eTag1).not.toBeFalsy();
+  expect(eTag1).toEqual(eTag0);
+  const result = await getObject(to);
+  expect(result.foo).toEqual('bar');
 });

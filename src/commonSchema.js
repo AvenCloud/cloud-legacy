@@ -32,11 +32,12 @@ export const isDocName = string()
 export const isAuthSession = string();
 export const isAuthKey = string();
 export const isDomain = string();
+export const isDocId = string();
 
 export const isPermissionRule = object()
   .noUnknown()
   .shape({
-    account: isAuthName,
+    authName: isAuthName,
     role: string().oneOf(['write', 'read']),
   });
 

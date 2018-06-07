@@ -1,13 +1,12 @@
 import { object, string } from 'yup';
-import { getDoc, getDocMeta } from '../data';
+import { getDocVersion, getDocMeta } from '../data';
+import { getPermissions } from '../permission';
 import { PRIMARY_DOMAIN, verifySessionAuth } from '../auth';
 import {
   optionallyAuthenticatedAction,
   isAuthName,
   isDocName,
 } from '../commonSchema';
-
-const canRoleRead = role => role === 'write' || role === 'read';
 
 export const schema = object()
   .noUnknown()
@@ -21,17 +20,6 @@ export const schema = object()
 export default async function DocGet(action) {
   const { authName } = await verifySessionAuth(action);
 
-  const doc = await getDoc(
-    action.domain || PRIMARY_DOMAIN,
-    action.owner,
-    action.docName,
-  );
-  if (!doc) {
-    return null;
-  }
-  if (action.owner === authName) {
-    return doc;
-  }
   const docMeta = await getDocMeta(
     action.domain || PRIMARY_DOMAIN,
     action.owner,
@@ -40,27 +28,15 @@ export default async function DocGet(action) {
   if (!docMeta) {
     return null;
   }
-  if (docMeta.isPublic) {
-    return doc;
+  const { canRead } = getPermissions(docMeta, authName);
+  if (canRead) {
+    const doc = await getDocVersion(action.domain, docMeta.docId);
+    if (doc) {
+      return {
+        ...docMeta,
+        doc,
+      };
+    }
   }
-  if (
-    docMeta.permissions.find(
-      permission =>
-        permission.account === authName && canRoleRead(permission.role),
-    )
-  ) {
-    return doc;
-  }
+  return null;
 }
-
-// auth fields:
-
-// action.accountID
-// action.accountSession
-// action.accountKey
-
-// doc fields:
-
-// action.owner
-// action.docID
-// action.version

@@ -1,5 +1,6 @@
 import { useTestClient, config } from './config';
 import { checksumFile } from './fsUtils';
+import { publish, subscribe } from './pubsub';
 
 const Readable = require('stream').Readable;
 const path = require('path');
@@ -26,7 +27,13 @@ function getTestClient() {
       await fs.outputFile(outPath, buffer);
 
       const etag = await checksumFile(outPath);
-      console.log('wat', etag);
+      return etag;
+    },
+    async copyFile(from, to) {
+      const fromPath = path.join(testDir, from);
+      const toPath = path.join(testDir, to);
+      await fs.copy(fromPath, toPath);
+      const etag = await checksumFile(toPath);
       return etag;
     },
     async destroyFile(name) {
@@ -61,7 +68,17 @@ function getMinioClient() {
       s.push(buffer);
       s.push(null);
       const eTag = await m.putObject(bucket, name, s);
+      console.log('put file with eTag!', eTag);
+      return eTag;
     },
+    async copyFile(from, to) {
+      const result = await m.copyObject(bucket, to, from);
+      if (result && result.etag) {
+        return result.etag;
+      }
+      throw new Error('Invalid etag returned from data store!');
+    },
+
     async destroyFile(name) {
       await m.removeObject(bucket, name);
     },
@@ -88,7 +105,15 @@ const client = useTestClient ? getTestClient() : getMinioClient();
 
 export async function getObject(id) {
   const data = await client.getFile(id);
-  return JSON.parse(data);
+  const obj = JSON.parse(data);
+  if (typeof obj !== 'object') {
+    throw new Error(`Invalid data in database for ${id}. Expected an object`);
+  }
+  return obj;
+}
+
+export async function copyObject(from, to) {
+  return await client.copyFile(from, to);
 }
 
 export async function putObject(id, data) {
@@ -99,15 +124,15 @@ export async function putObject(id, data) {
   return await client.putFile(id, fileData);
 }
 
-const dataIDforAccount = (domain, accountID) =>
-  `domain/${domain}/accounts/${accountID}`;
+const dataIDforAccount = (domain, authName) =>
+  `domain/${domain}/accounts/${authName}`;
 
-export async function getAccount(domain, accountID) {
-  return getObject(dataIDforAccount(domain, accountID));
+export async function getAccount(domain, authName) {
+  return getObject(dataIDforAccount(domain, authName));
 }
 
-export async function putAccount(domain, accountID, account) {
-  return putObject(dataIDforAccount(domain, accountID), account);
+export async function putAccount(domain, authName, account) {
+  return putObject(dataIDforAccount(domain, authName), account);
 }
 
 const dataIDforAuthMethod = (domain, authMethodID) =>
@@ -132,24 +157,35 @@ export async function putSession(domain, sessionID, sessionData) {
   return putObject(dataIDforSession(domain, sessionID), sessionData);
 }
 
-const dataIDforDoc = (domain, owner, docID) =>
-  `domain/${domain}/doc/${owner}/${docID}`;
+const dataIDforDocName = (domain, owner, docName) =>
+  `domain/${domain}/doc/${owner}/${docName}`;
 
-export async function getDoc(domain, owner, docID) {
-  return getObject(dataIDforDoc(domain, owner, docID));
+const dataIDforDoc = (domain, etag) => `domain/${domain}/data/name/${etag}`;
+
+export async function getDoc(domain, owner, docName) {
+  return getObject(dataIDforDocName(domain, owner, docName));
 }
 
-export async function putDoc(domain, owner, docID, docData) {
-  return putObject(dataIDforDoc(domain, owner, docID), docData);
+export async function getDocVersion(domain, etag) {
+  const data = await getObject(dataIDforDoc(domain, etag));
+  return data;
 }
 
-const dataIDforDocMeta = (domain, owner, docID) =>
-  `domain/${domain}/doc-meta/${owner}/${docID}`;
-
-export async function getDocMeta(domain, owner, docID) {
-  return getObject(dataIDforDocMeta(domain, owner, docID));
+export async function putDoc(domain, owner, docName, docData) {
+  const mainDocDataID = dataIDforDocName(domain, owner, docName);
+  const etag = await putObject(mainDocDataID, docData);
+  const docDataID = dataIDforDoc(domain, etag);
+  await copyObject(mainDocDataID, docDataID);
+  return etag;
 }
 
-export async function putDocMeta(domain, owner, docID, docData) {
-  return putObject(dataIDforDocMeta(domain, owner, docID), docData);
+const dataIDforDocMeta = (domain, owner, docName) =>
+  `domain/${domain}/doc-meta/${owner}/${docName}`;
+
+export async function getDocMeta(domain, owner, docName) {
+  return getObject(dataIDforDocMeta(domain, owner, docName));
+}
+
+export async function putDocMeta(domain, owner, docName, docData) {
+  return putObject(dataIDforDocMeta(domain, owner, docName), docData);
 }

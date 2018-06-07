@@ -44,7 +44,7 @@ test('Doc create and get', async () => {
     docName: 'thing0',
     ...sessionInfo,
   });
-  expect(accountGetRequest1.info).toEqual(42);
+  expect(accountGetRequest1.doc.info).toEqual(42);
 });
 
 test('Private and public doc configuration', async () => {
@@ -62,15 +62,13 @@ test('Private and public doc configuration', async () => {
     docName: 'thing0',
   });
   expect(accountGetRequest0).toEqual(null);
-
   const accountGetRequest1 = await dispatch({
     type: 'DocGet',
     owner: 'tester',
     docName: 'thing0',
     ...sessionInfo,
   });
-  expect(accountGetRequest1.info).toEqual(42);
-
+  expect(accountGetRequest1.doc.info).toEqual(42);
   await dispatch({
     type: 'DocPut',
     owner: 'tester',
@@ -84,7 +82,7 @@ test('Private and public doc configuration', async () => {
     owner: 'tester',
     docName: 'thing0',
   });
-  expect(accountGetRequest2.info).toEqual(42);
+  expect(accountGetRequest2.doc.info).toEqual(42);
 });
 
 test('Doc read permission', async () => {
@@ -101,8 +99,8 @@ test('Doc read permission', async () => {
     doc: { info: 42 },
     isPublic: false,
     permissions: [
-      { account: 'other', role: 'read' },
-      { account: 'great', role: 'write' },
+      { authName: 'other', role: 'read' },
+      { authName: 'great', role: 'write' },
     ],
   });
   const getBeforePermissions = await dispatch({
@@ -111,27 +109,25 @@ test('Doc read permission', async () => {
     docName: 'thingWithPermissions',
     ...readerSession,
   });
-  expect(getBeforePermissions).toEqual(undefined);
-
+  expect(getBeforePermissions).toEqual(null);
   await dispatch({
     type: 'DocPut',
     owner: 'tester',
     docName: 'thingWithPermissions',
     ...sessionInfo,
     permissions: [
-      { account: 'other', role: 'read' },
-      { account: 'reader', role: 'read' },
-      { account: 'great', role: 'write' },
+      { authName: 'other', role: 'read' },
+      { authName: 'reader', role: 'read' },
+      { authName: 'great', role: 'write' },
     ],
   });
-
   const accountGetRequest1 = await dispatch({
     type: 'DocGet',
     owner: 'tester',
     docName: 'thingWithPermissions',
     ...readerSession,
   });
-  expect(accountGetRequest1.info).toEqual(42);
+  expect(accountGetRequest1.doc.info).toEqual(42);
 });
 
 test('Doc write permission', async () => {
@@ -140,7 +136,7 @@ test('Doc write permission', async () => {
     'writer',
     'test2@email.com',
   );
-  await dispatch({
+  const firstPut = await dispatch({
     type: 'DocPut',
     owner: 'tester',
     docName: 'thingWithPermissions',
@@ -148,48 +144,48 @@ test('Doc write permission', async () => {
     doc: { info: 42 },
     isPublic: false,
     permissions: [
-      { account: 'other', role: 'read' },
-      { account: 'great', role: 'write' },
+      { authName: 'other', role: 'read' },
+      { authName: 'great', role: 'write' },
     ],
   });
+  expect(typeof firstPut.docId).toBe('string');
   try {
     await dispatch({
       type: 'DocPut',
       owner: 'tester',
+      lastDocId: firstPut.docId,
       docName: 'thingWithPermissions',
       ...writerSession,
       doc: { newMeaning: 3 },
     });
   } catch (e) {
-    expect(e.message).toBe('Invalid authentication');
+    expect(e.message).toBe('Invalid Authentication');
   }
-
   await dispatch({
     type: 'DocPut',
     owner: 'tester',
     docName: 'thingWithPermissions',
     ...sessionInfo,
+    lastDocId: firstPut.docId,
     permissions: [
-      { account: 'other', role: 'read' },
-      { account: 'writer', role: 'write' },
-      { account: 'great', role: 'write' },
+      { authName: 'other', role: 'read' },
+      { authName: 'writer', role: 'write' },
+      { authName: 'great', role: 'write' },
     ],
   });
-
-  await dispatch({
+  const put2 = await dispatch({
     type: 'DocPut',
     owner: 'tester',
     docName: 'thingWithPermissions',
+    lastDocId: firstPut.docId,
     ...writerSession,
     doc: { newMeaning: 4 },
   });
-
   const accountGetRequest1 = await dispatch({
     type: 'DocGet',
     owner: 'tester',
     docName: 'thingWithPermissions',
     ...sessionInfo,
   });
-  expect(accountGetRequest1.info).toEqual(undefined);
-  expect(accountGetRequest1.newMeaning).toEqual(4);
+  expect(accountGetRequest1.doc.newMeaning).toEqual(4);
 });

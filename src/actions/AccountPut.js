@@ -15,7 +15,7 @@ export const schema = object()
 export default async function AccountPut(action) {
   const { authName } = await verifySessionAuth(action);
   if (!authName) {
-    throw new Error('Invalid authentication');
+    throw new Error('Invalid Authentication');
   }
   const lastAccount = await getAccount(
     action.domain || PRIMARY_DOMAIN,

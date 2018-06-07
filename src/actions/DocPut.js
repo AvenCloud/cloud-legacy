@@ -1,13 +1,15 @@
 import { object, string, array, bool } from 'yup';
-import { putDoc, putDocMeta, getDocMeta } from '../data';
+import { putDoc, copyDoc, putDocMeta, getDocMeta } from '../data';
 import { PRIMARY_DOMAIN, verifySessionAuth } from '../auth';
 import { publish, subscribe } from '../pubsub';
+import { getPermissions } from '../permission';
 import { config } from '../config';
 import {
   authenticatedAction,
   isDocName,
   isAuthName,
   isPermissionRule,
+  isDocId,
 } from '../commonSchema';
 
 export const schema = object()
@@ -16,6 +18,7 @@ export const schema = object()
     type: string().oneOf(['DocPut']),
     owner: isAuthName,
     docName: isDocName,
+    lastDocId: string().notRequired(),
     doc: object().notRequired(),
     isPublic: bool().notRequired(),
     permissions: array()
@@ -25,68 +28,121 @@ export const schema = object()
   });
 
 subscribe('doc-will-update', msg => {
-  console.log('DocPut doc-will-update' + config.INSTANCE_ID, {
+  console.log('DocPut sees doc-will-update' + config.INSTANCE_ID, {
     msg,
   });
 });
 subscribe('doc-did-update', msg => {
-  console.log('DocPut doc-did-update ' + config.INSTANCE_ID, {
+  console.log('DocPut sees doc-did-update ' + config.INSTANCE_ID, {
     msg,
   });
 });
 
 export default async function DocPut(action) {
+  const updateTime = Date.now();
   const { authName } = await verifySessionAuth(action);
   if (!authName) {
-    throw new Error('Invalid authentication');
+    throw new Error('Invalid Authentication');
   }
+  // subscribeToDocUpdates()
+
   const { owner, docName, doc, isPublic, permissions } = action;
   const domain = action.domain || PRIMARY_DOMAIN;
-  const willUpdatePayload = {
-    type: 'WillUpdate',
-    docName,
-    owner,
-  };
-  const didUpdatePayload = {
-    ...willUpdatePayload,
-    type: 'DidUpdate',
-  };
-  let docId = undefined;
-  if (owner === authName) {
-    if (isPublic != null || permissions != null) {
-      publish('doc-will-update', willUpdatePayload);
-      const metaDoc = await getDocMeta(domain, authName, docName);
-      const lastMeta = metaDoc || {};
-      const meta = {
-        ...lastMeta,
-        isPublic: isPublic != null ? isPublic : !!lastMeta.isPublic,
-        permissions: permissions || lastMeta.permissions || [],
-      };
-      await putDocMeta(domain, authName, docName, meta);
-      publish('doc-did-update', didUpdatePayload);
-    }
-    if (doc) {
-      docId = await putDoc(domain, authName, docName, doc);
-    }
-    return { ...lastMeta, owner, docName, docId };
+  const metaDocData = (await getDocMeta(domain, owner, docName)) || {};
+  const metaDoc = { ...metaDocData, docName, owner, domain };
+  const { canRead, canWrite, canAdmin } = getPermissions(metaDoc, authName);
+  const outputMeta = { ...metaDoc };
+  if (!canWrite) {
+    throw new Error('Invalid Authentication');
   }
-  const docMeta = await getDocMeta(domain, owner, docName);
+
+  if (metaDoc.docId && action.doc && action.lastDocId !== metaDoc.docId) {
+    throw new Error('Invalid lastDocId!');
+  }
+  publish('doc-will-update', {
+    ...outputMeta,
+  });
+  // so we fired doc-will-update, but may still reach an error. I suppose it really means "MAY" update!
+
+  if (doc) {
+    const outputDoc = {
+      ...doc,
+      ...outputMeta,
+    };
+    outputMeta.lastDocId = outputMeta.docId;
+    outputMeta.docId = await putDoc(domain, authName, docName, outputDoc);
+  }
+
+  if (action.isPublic || action.permissions) {
+    if (!canAdmin) {
+      throw new Error('Invalid Authentication');
+    }
+    outputMeta.isPublic =
+      action.isPublic == null ? outputMeta.isPublic : action.isPublic;
+    outputMeta.permissions =
+      action.permissions == null ? outputMeta.permissions : action.permissions;
+  }
+
+  // perhaps transfer logic, plz test this:
+  // if (action.transferOwner) {
+  //   if (owner !== authName) {
+  //     throw new Error('Invalid Authentication');
+  //   }
+  //   // more transer logic here. copy doc from owner to transferOwner, deleting source
+  //   outputMeta.owner = action.transferOwner;
+  // }
 
   if (
-    docMeta &&
-    docMeta.permissions &&
-    docMeta.permissions.find(
-      rule => rule.account === authName && rule.role === 'write',
-    )
+    metaDoc.isPublic !== outputMeta.isPublic ||
+    metaDoc.permissions !== outputMeta.permissions ||
+    metaDoc.docId !== outputMeta.docId
   ) {
-    publish('doc-will-update', willUpdatePayload);
-    docId = didUpdatePayload.docId = await putDoc(domain, owner, docName, doc);
-
-    publish('doc-did-update', didUpdatePayload);
-    return { ...docMeta, owner, docName, docId };
+    await putDocMeta(domain, owner, docName, outputMeta);
   }
-  throw new Error('Invalid authentication');
+
+  publish('doc-did-update', outputMeta);
+
+  return outputMeta;
 }
+//   if (
+//     !owner === authName ||
+//     (!metaDoc.permissions ||
+//     !metaDoc.permissions.find(
+//       rule => rule.account === authName && rule.role === 'write',
+//     ))
+//   ) {
+//     throw new Error('Invalid Authentication');
+//   }
+
+//   if (owner === authName) {
+//     if (isPublic != null || permissions != null) {
+//       const meta = {
+//         ...metaDoc,
+//         isPublic: isPublic != null ? isPublic : !!metaDoc.isPublic,
+//         permissions: permissions || metaDoc.permissions || [],
+//       };
+//       await putDocMeta(domain, authName, docName, meta);
+//     }
+//     if (doc) {
+//     }
+//     await Promise.all([
+//       async () => {
+//         await putDocMeta(domain, authName, docName, {
+//           ...metaDoc,
+//           docId,
+//         });
+//       },
+
+//   docId = await putDoc(
+//       domain,
+//       owner,
+//       docName,
+//       outputDoc,
+//     );
+//     return { ...metaDoc, owner, docName, docId, lastDocId };
+//   }
+//   throw new Error('Invalid Authentication');
+// }
 
 // action.owner
 // action.docName
