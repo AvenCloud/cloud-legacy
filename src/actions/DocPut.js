@@ -26,13 +26,13 @@ export const schema = object()
     ...authenticatedAction,
   });
 
-subscribe('doc-will-update', msg => {
-  console.log('DocPut sees doc-will-update' + config.INSTANCE_ID, {
+subscribe('doc-will-put', msg => {
+  console.log('DocPut sees doc-will-put' + config.INSTANCE_ID, {
     msg,
   });
 });
-subscribe('doc-did-update', msg => {
-  console.log('DocPut sees doc-did-update ' + config.INSTANCE_ID, {
+subscribe('doc-did-put', msg => {
+  console.log('DocPut sees doc-did-put ' + config.INSTANCE_ID, {
     msg,
   });
 });
@@ -58,10 +58,10 @@ export default async function DocPut(action) {
   if (metaDoc.docId && action.doc && action.lastDocId !== metaDoc.docId) {
     throw new Error('Invalid lastDocId!');
   }
-  publish('doc-will-update', {
+  publish('doc-will-put', {
     ...outputMeta,
   });
-  // so we fired doc-will-update, but may still reach an error. I suppose it really means "MAY" update!
+  // so we fired doc-will-put, but may still reach an error. I suppose it really means "MAY" update!
 
   if (doc) {
     const outputDoc = {
@@ -98,7 +98,7 @@ export default async function DocPut(action) {
     await putDocMeta(domain, owner, docName, outputMeta);
   }
 
-  publish('doc-did-update', outputMeta);
+  publish('doc-did-put', outputMeta);
 
   return outputMeta;
 }
