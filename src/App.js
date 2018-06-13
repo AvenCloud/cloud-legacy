@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Image,
 } from 'react-native';
+import Docs from './docs';
+import { createSwitchNavigator } from '@react-navigation/core';
 
 // const Video = ({ vimeoId }) => (
 //   <iframe
@@ -27,7 +29,7 @@ import {
 // const ScreenTitle = ({ children }) => <Text>{children}</Text>;
 // const ScreenContainer = ({ children }) => <View>{children}</View>;
 
-class App extends React.Component {
+class Teaser extends React.Component {
   render() {
     return (
       <View style={{ flex: 1, justifyContent: 'center' }}>
@@ -67,17 +69,10 @@ class App extends React.Component {
   }
 }
 
-// {/* <ScrollView
-//   style={StyleSheet.absoluteFill}
-//   contentContainerStyle={{
-//     justifyContent: 'center',
-//     minHeight: '100%',
-//   }}>
-//   <LinkBar
-//     onLink={activeScreen => {
-//       this.setState({ activeScreen });
-//     }}
-//   />
-//   {ActiveScreen && <ActiveScreen />}
-// </ScrollView> */}
+const App = createSwitchNavigator({
+  Teaser,
+  docs: Docs,
+});
+
 export default App;
+// export default Teaser;

@@ -34,13 +34,13 @@ function getGCSClient() {
   // // gcloud pubsub subscriptions create my-topic-subscription --topic my-topic
 
   return {
-    publish(topic, message) {
-      const { publish } = pubsub.topic('session-destroy').publisher();
+    async publish(topic, message) {
+      const publisher = pubsub.topic(topic).publisher();
       const messageData = Buffer.from(JSON.stringify(message));
-      publish(messageData);
+      await publisher.publish(messageData);
       console.log(`${config.INSTANCE_ID} Published to ${topic}`, message);
     },
-    subscribe(topic, handler) {
+    async subscribe(topic, handler) {
       const subscription = pubsub.subscription(`${topic}-subscription`);
       const messageHandler = cloudMessage => {
         const message = JSON.parse(cloudMessage.data);

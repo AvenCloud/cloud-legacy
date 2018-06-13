@@ -4,6 +4,7 @@ import ReactDOMServer from 'react-dom/server';
 import { AppRegistry } from 'react-native';
 import dispatch from './dispatch';
 import App from './App';
+import { handleServerRequest } from '@react-navigation/web';
 
 const { config } = require('./config');
 const yes = require('yes-https');
@@ -33,16 +34,19 @@ server.post('/api', json(), async (req, res) => {
 });
 
 server.get('/*', (req, res) => {
-  // const { path, query } = req;
+  const { path, query } = req;
+
+  const { navigation, title } = handleServerRequest(App.router, path, query);
+  // const { navigation, title } = { navigation: undefined, title: 'Aven Cloud' };
 
   const { element, getStyleElement } = AppRegistry.getApplication('App', {
-    initialProps: {},
+    initialProps: {
+      navigation,
+    },
   });
 
   const html = ReactDOMServer.renderToString(element);
   const css = ReactDOMServer.renderToStaticMarkup(getStyleElement());
-
-  const title = 'Aven Cloud';
 
   res.send(
     `<!doctype html>

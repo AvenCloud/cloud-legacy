@@ -45,6 +45,8 @@ function getTestClient() {
 function getMinioClient() {
   const Minio = require('minio');
 
+  const storage = require('@google-cloud/storage')();
+
   const m = new Minio.Client({
     endPoint: config.STORAGE_HOST,
     secure: !!config.STORAGE_SECURE,
@@ -53,12 +55,15 @@ function getMinioClient() {
   });
 
   const bucket = config.STORAGE_BUCKET;
+  const gBucket = storage.bucket(bucket);
 
   return {
     async getFile(name) {
       try {
         const data = await m.getObject(bucket, name);
-        return await getRawBody(data);
+        const body = await getRawBody(data);
+        console.log('ok gotcha', name, body, data);
+        return body;
       } catch (e) {
         return null;
       }
@@ -72,11 +77,8 @@ function getMinioClient() {
       return eTag;
     },
     async copyFile(from, to) {
-      const result = await m.copyObject(bucket, to, from);
-      if (result && result.etag) {
-        return result.etag;
-      }
-      throw new Error('Invalid etag returned from data store!');
+      const { resource } = await gBucket.file(from).copy(to);
+      return resource.etag;
     },
 
     async destroyFile(name) {
@@ -160,7 +162,7 @@ export async function putSession(domain, sessionID, sessionData) {
 const dataIDforDocName = (domain, owner, docName) =>
   `domain/${domain}/doc/${owner}/${docName}`;
 
-const dataIDforDoc = (domain, etag) => `domain/${domain}/data/name/${etag}`;
+const dataIDforDoc = (domain, etag) => `domain/${domain}/data/${etag}`;
 
 export async function getDoc(domain, owner, docName) {
   return getObject(dataIDforDocName(domain, owner, docName));
@@ -174,7 +176,9 @@ export async function getDocVersion(domain, etag) {
 export async function putDoc(domain, owner, docName, docData) {
   const mainDocDataID = dataIDforDocName(domain, owner, docName);
   const etag = await putObject(mainDocDataID, docData);
+  console.log('itz happening', mainDocDataID, etag);
   const docDataID = dataIDforDoc(domain, etag);
+  console.log('fuuu', docDataID);
   await copyObject(mainDocDataID, docDataID);
   return etag;
 }
