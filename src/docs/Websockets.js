@@ -1,4 +1,4 @@
-import { DocPage, P, SubTitle, ExampleAction, List } from './components';
+import { DocPage, P, SubTitle, List } from './components';
 import React from 'react';
 
 export default class Doc extends React.Component {

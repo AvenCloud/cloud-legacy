@@ -28,7 +28,6 @@ pages.forEach(page => {
   namedPages[page.info.routeName] = page;
 });
 
-const NotFound = () => <Text>Not found!</Text>;
 const SidebarLinkWithNav = ({ navigation, page }) => {
   const { state } = navigation;
   const activeRouteName = state.routes[state.index].routeName;
