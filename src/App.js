@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Image,
 } from 'react-native';
-import Docs from './docs';
+import Docs from './Docs';
 import { createSwitchNavigator } from '@react-navigation/core';
 
 // const Video = ({ vimeoId }) => (
