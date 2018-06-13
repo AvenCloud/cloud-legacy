@@ -1,28 +1,18 @@
-import app from './server';
-import { config } from './config';
-import http from 'http';
+import server from './server';
 
-const server = http.createServer(app);
+let serverInstance = null;
 
-let currentApp = app;
-
-server.listen(config.PORT, error => {
-  if (error) {
-    console.log(error);
-    return;
-  }
-
-  console.log(`Started instance ${config.INSTANCE_ID} on port ${config.PORT}`);
+server().then(instance => {
+  serverInstance = instance;
 });
 
 if (module.hot) {
   console.log('✅  Server-side HMR Enabled!');
 
-  module.hot.accept('./server', () => {
+  module.hot.accept('./server', async () => {
     console.log('🔁  HMR Reloading `./server`...');
-    server.removeListener('request', currentApp);
-    const newApp = require('./server').default;
-    server.on('request', newApp);
-    currentApp = newApp;
+    serverInstance.remove();
+    const newServer = require('./server').default;
+    serverInstance = await newServer();
   });
 }

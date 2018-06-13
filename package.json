@@ -31,6 +31,7 @@
     "react-native-paper": "^1.9.1",
     "react-native-web": "^0.7.3",
     "uuid": "^3.2.1",
+    "ws": "^5.2.0",
     "yes-https": "^0.0.4",
     "yup": "^0.25.1"
   }

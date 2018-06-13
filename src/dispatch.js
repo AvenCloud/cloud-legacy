@@ -7,6 +7,7 @@ const actions = {
   SessionDestroy: require('./actions/SessionDestroy'),
   DocGet: require('./actions/DocGet'),
   DocPut: require('./actions/DocPut'),
+  DebugInfo: require('./actions/DebugInfo'),
 };
 
 export default async function dispatch(action) {
