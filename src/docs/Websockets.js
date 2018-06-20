@@ -2,13 +2,13 @@ import { DocPage, P, SubTitle, List } from './components';
 import React from 'react';
 
 export default class Doc extends React.Component {
-  static info = {
+  static navigationOptions = {
     routeName: 'Websockets',
     title: 'Websocket Connections',
   };
   render() {
     return (
-      <DocPage title={Doc.info.title}>
+      <DocPage title={Doc.navigationOptions.title}>
         <SubTitle>Connecting to the server</SubTitle>
 
         <P>

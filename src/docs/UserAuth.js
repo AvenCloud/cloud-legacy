@@ -2,13 +2,13 @@ import { DocPage, P, SubTitle } from './components';
 import React from 'react';
 
 export default class Doc extends React.Component {
-  static info = {
+  static navigationOptions = {
     routeName: 'UserAuth',
     title: 'User Accounts and Authentication',
   };
   render() {
     return (
-      <DocPage title={Doc.info.title}>
+      <DocPage title={Doc.navigationOptions.title}>
         <SubTitle>Authentication Tokens</SubTitle>
 
         <P>

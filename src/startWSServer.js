@@ -20,8 +20,7 @@ export default function startWSServer(wss) {
     });
 
     ws.on('close', () => {
-      subscription && subscription.remove();
-      subscription = null;
+      subscription.remove();
     });
 
     ws.on('message', async message => {
@@ -56,7 +55,10 @@ export default function startWSServer(wss) {
           return;
         }
       }
-      console.log('received from server: %s', message);
     });
   });
+
+  return {
+    close: () => {},
+  };
 }

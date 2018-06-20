@@ -8,6 +8,7 @@ import { handleServerRequest } from '@react-navigation/web';
 import startWSServer from './startWSServer';
 import http from 'http';
 import { config } from './config';
+import { pageColor } from './common';
 
 const yes = require('yes-https');
 const helmet = require('helmet');
@@ -72,6 +73,7 @@ export default async function startServer(inputConfig) {
           height: 100%;
           display: flex;
           flex-direction: column;
+          background-color: ${pageColor};
         }
         </style>
         ${css}
@@ -110,6 +112,7 @@ export default async function startServer(inputConfig) {
 
   const remove = () => {
     httpServer.close();
+    wsServer.close();
   };
 
   return {

@@ -1,25 +1,35 @@
 import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
 
-import linkContext from './linkContext';
-
 export const DocPage = ({ children, title }) => (
-  <ScrollView contentContainerStyle={{ padding: 50 }}>
+  <ScrollView
+    contentContainerStyle={{ paddingHorizontal: 50, paddingVertical: 20 }}>
     <View>
-      {title && <Text style={{ fontSize: 84 }}>{title}</Text>}
+      {title && (
+        <Text style={{ fontSize: 60, fontWeight: 'bold' }}>{title}</Text>
+      )}
       {children}
     </View>
   </ScrollView>
 );
 export const P = ({ children }) => (
-  <Text style={{ marginVertical: 15 }}>{children}</Text>
+  <Text style={{ marginVertical: 8, fontSize: 18, color: '#333' }}>
+    {children}
+  </Text>
 );
 export const List = ({ items }) => (
   <View style={{ marginLeft: 20 }}>{items}</View>
 );
 
 export const SubTitle = ({ children }) => (
-  <Text style={{ marginTop: 60, marginBottom: 20, fontSize: 42 }}>
+  <Text
+    style={{
+      marginTop: 40,
+      marginBottom: 10,
+      fontSize: 28,
+      color: '#223',
+      fontWeight: 'bold',
+    }}>
     {children}
   </Text>
 );
@@ -33,17 +43,15 @@ export const ExampleAction = ({ action, response }) => (
 
 export class Link extends React.Component {
   render() {
-    const { Consumer } = linkContext;
     const { toDoc, children } = this.props;
-    console.log('render link wtf', toDoc, children);
     return (
-      <Consumer
-        children={handleLink => (
-          <Text style={{ color: '#228' }} onPress={() => handleLink(toDoc)}>
-            {children}
-          </Text>
-        )}
-      />
+      <Text
+        style={{ color: '#228' }}
+        onPress={() => {
+          console.log('go to link', toDoc);
+        }}>
+        {children}
+      </Text>
     );
   }
 }

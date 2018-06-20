@@ -2,13 +2,13 @@ import { DocPage, P, SubTitle, Link } from './components';
 import React from 'react';
 
 export default class Doc extends React.Component {
-  static info = {
+  static navigationOptions = {
     routeName: 'DispatchingActions',
     title: 'Dispatching Actions',
   };
   render() {
     return (
-      <DocPage title={Doc.info.title}>
+      <DocPage title={Doc.navigationOptions.title}>
         <P>
           Actions can be sent to the server with a JSON-encoded POST request to
           https://aven.cloud/api .

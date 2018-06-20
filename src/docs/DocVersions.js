@@ -2,13 +2,13 @@ import { DocPage, P, SubTitle, ExampleAction } from './components';
 import React from 'react';
 
 export default class Doc extends React.Component {
-  static info = {
+  static navigationOptions = {
     routeName: 'DocVersions',
     title: 'Doc Versions',
   };
   render() {
     return (
-      <DocPage title={Doc.info.title}>
+      <DocPage title={Doc.navigationOptions.title}>
         <SubTitle>Document versions</SubTitle>
         <P>
           Each document will automatically preserve a history of each version

@@ -3,13 +3,13 @@ import { DocPage, P, SubTitle, Link } from './components';
 import React from 'react';
 
 export default class Doc extends React.Component {
-  static info = {
+  static navigationOptions = {
     routeName: 'GettingStarted',
     title: 'Getting Started',
   };
   render() {
     return (
-      <DocPage title={Doc.info.title}>
+      <DocPage title={Doc.navigationOptions.title}>
         <SubTitle>Get Started</SubTitle>
         <P>
           Welcome to Aven Cloud, the free and easy-to-use database for apps and

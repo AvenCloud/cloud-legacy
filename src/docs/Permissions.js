@@ -2,13 +2,13 @@ import { DocPage, P, SubTitle, ExampleAction, List } from './components';
 import React from 'react';
 
 export default class Doc extends React.Component {
-  static info = {
+  static navigationOptions = {
     routeName: 'Permissions',
     title: 'Doc Permission and Privacy',
   };
   render() {
     return (
-      <DocPage title={Doc.info.title}>
+      <DocPage title={Doc.navigationOptions.title}>
         <SubTitle>Default Doc Privacy</SubTitle>
         <P>
           All uploaded docs are private by default. Each doc can only be read by
