@@ -7,7 +7,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/keys.public.txt', (req, res) => {
-	res.send(require('fs').readFileSync('~/.ssh/id_rsa.pub'));
+	res.send(require('fs').readFileSync('/home/bot/.ssh/id_rsa.pub'));
 });
 
 app.listen(8888, () => {
