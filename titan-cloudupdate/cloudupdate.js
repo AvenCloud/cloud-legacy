@@ -32,7 +32,7 @@ app.post('/update', bodyParser.json({
 	console.log('git pull', result.toString());
 	const result2 = exec('yarn');
 	console.log('yarn', result2.toString());
-	const result3 = exec('sudo', ['/usr/bin/systemctl', 'restart', 'titan']);
+	const result3 = exec('sudo', ['/bin/systemctl', 'restart', 'titan']);
 	console.log('restart titan', result3.toString());
 
 
