@@ -35,6 +35,12 @@ app.post('/update', bodyParser.json({
 	const result3 = exec('sudo', ['/bin/systemctl', 'restart', 'titan']);
 	console.log('restart titan', result3.toString());
 
+	const rsync = exec('rsync', ['.','root@hyperion.aven.cloud:/cloud','-r', '--exclude', 'node_modules', '--delete-after']);
+	console.log('restart titan', rsync.toString());
+
+
+	const hyperion = exec('ssh', ['root@hyperion.aven.cloud','-t', "systemctl restart hyperion"]);
+	console.log('restart hyperion', hyperion.toString());
 
 	res.send('thanks github');
 })
