@@ -1,3 +1,3 @@
 # Aven Cloud
 
-Great news, everybody!
+This is magic!
