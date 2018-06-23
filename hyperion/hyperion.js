@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 
 app.get('/', (req, res) => {
-	res.send('Hyperion2!');
+	res.send('Hyperion Server');
 });
 
 app.get('/keys.public.txt', (req, res) => {
