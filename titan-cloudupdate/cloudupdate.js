@@ -26,7 +26,7 @@ app.post('/update', bodyParser.json({
 		}
 	}
 }), (req, res) => {
-	console.log('update')
+	console.log('update from gh')
 	console.log(req.body)
 	const result = exec('git', ['pull']);
 	console.log('git pull', result.toString());
