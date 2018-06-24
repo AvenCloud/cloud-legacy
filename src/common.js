@@ -6,6 +6,7 @@ import {
   // StyleSheet,
   Image,
   TouchableHighlight,
+  TouchableWithoutFeedback,
   TextInput,
 } from 'react-native';
 import { withNavigation } from '@react-navigation/core';
@@ -19,33 +20,58 @@ const headerLinkActiveColor = '#112';
 const textColor = '#223';
 export const pageColor = '#f9f9fc';
 
-const SidebarLinkWithNav = ({ navigation, title, to }) => {
+const LinkViewWithNav = ({
+  navigation,
+  to,
+  children,
+  feedback,
+  style,
+  activeStyle,
+}) => {
   const { state } = navigation;
-  const activeRouteName = state.routes[state.index].routeName;
-  const isActive = activeRouteName === to;
+  let isActive = false;
+  if (state.routes) {
+    const activeRouteName = state.routes[state.index].routeName;
+    isActive = activeRouteName === to;
+  }
+  const s = isActive ? [style, activeStyle] : style;
+  const T =
+    feedback === 'highlight' ? TouchableHighlight : TouchableWithoutFeedback;
   return (
-    <TouchableHighlight
-      key={to}
+    <T
       onPress={() => {
         navigation.navigate(to);
       }}>
-      <View
-        style={{
-          paddingHorizontal: 20,
-          paddingVertical: 14,
-          backgroundColor: isActive ? activeBg : '#eee',
-        }}>
+      <View style={s}>
+        {typeof children === 'function' ? children(isActive) : children}
+      </View>
+    </T>
+  );
+};
+export const LinkView = withNavigation(LinkViewWithNav);
+
+export const SidebarLink = ({ navigation, title, to }) => {
+  return (
+    <LinkView
+      feedback="highlight"
+      to={to}
+      style={{
+        paddingHorizontal: 20,
+        paddingVertical: 14,
+        backgroundColor: '#eee',
+      }}
+      activeStyle={{ backgroundColor: activeBg }}>
+      {isActive => (
         <Text
           style={{
             color: isActive ? 'white' : textColor,
           }}>
           {title}
         </Text>
-      </View>
-    </TouchableHighlight>
+      )}
+    </LinkView>
   );
 };
-export const SidebarLink = withNavigation(SidebarLinkWithNav);
 
 export const Sidebar = ({ children }) => (
   <View
@@ -108,15 +134,20 @@ export const Page = ({ children }) => (
             maxWidth: pageWidth,
             flexDirection: 'row',
           }}>
-          <Image
-            source={require('./images/AvenLogoPlain.png')}
+          <LinkView
+            to="home"
             style={{
-              resizeMode: 'contain',
-              width: 100,
-              height: 50,
               marginHorizontal: pagePadding + 20,
-            }}
-          />
+            }}>
+            <Image
+              source={require('./images/AvenLogoPlain.png')}
+              style={{
+                resizeMode: 'contain',
+                width: 100,
+                height: 50,
+              }}
+            />
+          </LinkView>
           <View style={{ flex: 1 }} />
           <View style={{ marginHorizontal: pagePadding, flexDirection: 'row' }}>
             <HeaderLink title="Docs" to="docs" />

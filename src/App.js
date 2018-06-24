@@ -18,6 +18,14 @@ const Docs = createSidebarPage([
   require('./docs/Websockets').default,
 ]);
 
+const Home = ({ navigation }) => (
+  <Page>
+    <Title>Welcome to Aven</Title>
+    <P>content...</P>
+  </Page>
+);
+Home.title = null;
+
 const About = ({ navigation }) => (
   <Page>
     <Title>About Aven</Title>
@@ -25,9 +33,6 @@ const About = ({ navigation }) => (
   </Page>
 );
 About.title = 'About';
-About.navigationOptions = {
-  // title: 'Hello',
-};
 
 const AppNavigator = createSwitchNavigator(
   {
@@ -35,6 +40,7 @@ const AppNavigator = createSwitchNavigator(
     docs: Docs,
     login: Login,
     about: About,
+    home: Home,
   },
   {
     navigationOptions: ({ navigation, navigationOptions }) => {

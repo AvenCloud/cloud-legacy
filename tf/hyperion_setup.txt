@@ -1,0 +1,43 @@
+hyperion setup guide
+
+
+
+
+apt update
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+apt install -y nginx-core
+apt install -y software-properties-common
+apt install -y postgresql postgresql-contrib
+add-apt-repository -y ppa:certbot/certbot
+apt update
+apt install -y python-certbot-nginx
+apt install -y yarn
+apt install -y redis
+
+sudo -u postgres createuser cloud
+sudo -u postgres createdb -O cloud cloud
+sudo -u postgres psql -c "alter user cloud with encrypted password 'foobar'"
+
+rm /etc/nginx/nginx.conf
+echo "user www-data; worker_processes auto; pid /run/nginx.pid; events { worker_connections 768; } http { server { listen 80 default_server; location / { root /var/www/html; } } } "  > /etc/nginx/nginx.conf
+nginx -s reload
+
+certbot certonly -d hyperion.aven.cloud --agree-tos --webroot --webroot-path /var/www/html --email admin@aven.cloud
+
+
+rm /etc/nginx/nginx.conf
+echo "user www-data; worker_processes auto; pid /run/nginx.pid; events { worker_connections 768; } http { sendfile on; tcp_nopush on; tcp_nodelay on; keepalive_timeout 65; types_hash_max_size 2048; include /etc/nginx/mime.types; default_type application/octet-stream; ssl_protocols TLSv1 TLSv1.1 TLSv1.2; ssl_prefer_server_ciphers on; access_log /var/log/nginx/access.log; error_log /var/log/nginx/error.log; gzip on; gzip_disable "msie6"; server { listen 80 default_server; listen [::]:80 default_server; listen 443 ssl default_server; listen [::]:443 ssl default_server; ssl_certificate /etc/letsencrypt/live/hyperion.aven.cloud/fullchain.pem; ssl_certificate_key /etc/letsencrypt/live/hyperion.aven.cloud/privkey.pem; server_name hyperion.aven.cloud; location / { proxy_pass http://127.0.0.1:8880; } } } "  > /etc/nginx/nginx.conf
+nginx -s reload
+
+# get /cloud somehow.. rsync from titan right now
+# rsync . root@hyperion.aven.cloud:/cloud
+
+
+# write /etc/systemd/system/hyperion.service
+
+sudo systemctl enable hyperion
+sudo systemctl start hyperion
+
+# maybe not needed:
+ssh-keygen -N "" -f /root/.ssh/id_rsa
