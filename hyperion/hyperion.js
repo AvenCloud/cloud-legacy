@@ -4,7 +4,7 @@ const phoneService = require('../phone.service/phone.service');
 const emailService = require('../email.service/email.service');
 const webService = require('../web.service/web.service');
 const alertService = require('../alert.service/alert.service');
-const monitoringService = require('../monitoring.service/monitoring.service');
+const monitorService = require('../monitor.service/monitor.service');
 
 const PORT = 8880;
 
@@ -28,14 +28,14 @@ const startHyperion = async () => {
     alertEmail: process.env.ALERT_EMAIL,
   });
 
-  const monitoring = await monitoringService.startService({
+  const monitor = await monitorService.startService({
     alert,
     downstreamMonitorHost: 'titan.aven.cloud',
   });
 
   const web = await webService.startService({
     port: PORT,
-    services: [alert, email, phone, monitoring],
+    services: [alert, email, phone, monitor],
   });
 };
 
