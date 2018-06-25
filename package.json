@@ -9,8 +9,6 @@
     "precommit": "CI=true yarn build"
   },
   "dependencies": {
-    "@google-cloud/pubsub": "^0.18.0",
-    "@google-cloud/storage": "^1.7.0",
     "@react-navigation/core": "^0.0.0-alpha.8",
     "@react-navigation/web": "^0.0.0-alpha.8",
     "@sendgrid/mail": "^6.2.1",
@@ -24,6 +22,8 @@
     "helmet": "^3.12.1",
     "minio": "^5.0.2",
     "node-fetch": "^2.1.2",
+    "pg": "^7.4.3",
+    "plivo": "^4.0.0",
     "raw-body": "^2.3.3",
     "razzle": "^2.2.0",
     "react": "^16.4.0",
@@ -32,6 +32,7 @@
     "react-native-formik": "^1.5.0",
     "react-native-paper": "^1.9.1",
     "react-native-web": "^0.7.3",
+    "socket.io": "^2.1.1",
     "unstated": "^2.1.1",
     "uuid": "^3.2.1",
     "ws": "^5.2.0",

@@ -25,48 +25,41 @@ function getTestClient() {
   };
 }
 
-function getGCSClient() {
-  const PubSub = require(`@google-cloud/pubsub`);
-  const pubsub = new PubSub();
-
-  // DO NOT FORGET TO CREATE THE TOPIC + SUBSCRIPTION!
-  // // gcloud pubsub topics create my-topic
-  // // gcloud pubsub subscriptions create my-topic-subscription --topic my-topic
-
+function getRedisClient() {
   return {
     async publish(topic, message) {
-      const publisher = pubsub.topic(topic).publisher();
-      const messageData = Buffer.from(JSON.stringify(message));
-      await publisher.publish(messageData);
+      // const publisher = pubsub.topic(topic).publisher();
+      // const messageData = Buffer.from(JSON.stringify(message));
+      // await publisher.publish(messageData);
       console.log(`${config.INSTANCE_ID} Published to ${topic}`, message);
     },
     async subscribe(topic, handler) {
-      const subscription = pubsub.subscription(`${topic}-subscription`);
-      const messageHandler = cloudMessage => {
-        const message = JSON.parse(cloudMessage.data);
-        console.log(
-          `${config.INSTANCE_ID} Recieved message from ${topic}`,
-          message,
-        );
-        handler(message);
-        cloudMessage.ack();
-      };
-      subscription.on(`message`, messageHandler);
+      // const subscription = pubsub.subscription(`${topic}-subscription`);
+      // const messageHandler = cloudMessage => {
+      //   const message = JSON.parse(cloudMessage.data);
+      //   console.log(
+      //     `${config.INSTANCE_ID} Recieved message from ${topic}`,
+      //     message,
+      //   );
+      //   handler(message);
+      //   cloudMessage.ack();
+      // };
+      // subscription.on(`message`, messageHandler);
       console.log(`${config.INSTANCE_ID} subscribed to ${topic}`);
       return {
         remove() {
-          console.log(
-            `${config.INSTANCE_ID} Removing subscription from ${topic}`,
-          );
-          subscription.removeListener('message', messageHandler);
-          console.log('Subscription removed from ' + topic);
+          // console.log(
+          //   `${config.INSTANCE_ID} Removing subscription from ${topic}`,
+          // );
+          // subscription.removeListener('message', messageHandler);
+          // console.log('Subscription removed from ' + topic);
         },
       };
     },
   };
 }
 
-const client = useTestClient ? getTestClient() : getGCSClient();
+const client = useTestClient ? getTestClient() : getRedisClient();
 
 export function publish(topic, message) {
   return client.publish(topic, message);

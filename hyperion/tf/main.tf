@@ -1,5 +1,27 @@
+
+variable "do_token" {
+  description = "Digital Ocean Secret Key"
+}
+
+variable "cloudflare_email" {
+  description = "Cloudflare Email Address"
+}
+
+variable "cloudflare_token" {
+  description = "Cloudflare Secret Key"
+}
+
+variable "name" {
+  description = "Name of new server or cluster"
+}
+
 provider "digitalocean" {
   token = "${var.do_token}"
+}
+
+provider "cloudflare" {
+  email = "${var.cloudflare_email}"
+  token = "${var.cloudflare_token}"
 }
 
 resource "digitalocean_ssh_key" "ssh" {
@@ -7,21 +29,21 @@ resource "digitalocean_ssh_key" "ssh" {
     public_key = "${file("digital_ocean_key.pub")}"
 }
 
+
 resource "digitalocean_droplet" "mywebserver" {
   ssh_keys = ["${digitalocean_ssh_key.ssh.id}"]  
-  image              = "${var.ubuntu}"
-  region             = "${var.do_ams3}"
+  image              = "ubuntu-18-04-x64"
+  region             = "nyc3"
   size               = "s-1vcpu-1gb"
   private_networking = true
-  backups            = true
-  ipv6               = true
-  name               = "mywebserver-ams3"
+  name               = "${var.name}"
 
   provisioner "remote-exec" {
     inline = [
       "export PATH=$PATH:/usr/bin",
-      "sudo apt-get update",
-      "sudo apt-get -y install nginx",
+      "sudo apt update",
+      "sudo apt -y upgrade",
+      "sudo apt -y install nginx",
     ]
 
     connection {
@@ -34,7 +56,7 @@ resource "digitalocean_droplet" "mywebserver" {
 }
 
 resource "digitalocean_domain" "cruz-aven-cloud" {
-  name       = "cruz.aven.cloud"
+  name       = "${}.aven.cloud"
   ip_address = "${digitalocean_droplet.mywebserver.ipv4_address}"
 }
 

@@ -14,6 +14,7 @@ apt update
 apt install -y python-certbot-nginx
 apt install -y yarn
 apt install -y redis
+apt install -y unzip
 
 sudo -u postgres createuser cloud
 sudo -u postgres createdb -O cloud cloud
@@ -41,3 +42,11 @@ sudo systemctl start hyperion
 
 # maybe not needed:
 ssh-keygen -N "" -f /root/.ssh/id_rsa
+
+
+
+
+wget https://releases.hashicorp.com/terraform/0.11.7/terraform_0.11.7_linux_amd64.zip
+unzip terraform_0.11.7_linux_amd64.zip 
+
+mv terraform /usr/local/sbin/

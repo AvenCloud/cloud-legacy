@@ -1,15 +1,46 @@
-
 const express = require('express');
-const app = express();
 
-app.get('/', (req, res) => {
-	res.send('Titan Server 2');
-});
+const phoneService = require('../phone.service/phone.service');
+const emailService = require('../email.service/email.service');
+const webService = require('../web.service/web.service');
+const alertService = require('../alert.service/alert.service');
+const monitorService = require('../monitor.service/monitor.service');
 
-app.get('/keys.public.txt', (req, res) => {
-	res.send(require('fs').readFileSync('/home/bot/.ssh/id_rsa.pub'));
-});
+const PORT = 8888;
 
-app.listen(8888, () => {
-	console.log('server started on 8888')
-});
+require('dotenv').config();
+
+const startTitan = async () => {
+  const phone = await await phoneService.startService({
+    plivoAuthId: process.env.PLIVO_AUTH_ID,
+    plivoAuthToken: process.env.PLIVO_AUTH_TOKEN,
+    defaultFromNumber: process.env.PLIVO_FROM_NUMBER,
+  });
+  const email = await await emailService.startService({
+    sendgridKey: process.env.SENDGRID_KEY,
+    defaultFromEmail: process.env.DEFAULT_FROM_EMAIL,
+  });
+
+  const alert = await alertService.startService({
+    phone,
+    email,
+    alertPhone: process.env.ALERT_NUMBER,
+    alertEmail: process.env.ALERT_EMAIL,
+  });
+
+  const monitor = await monitorService.startService({
+    alert,
+    monitorHost: 'hyperion.aven.cloud',
+  });
+
+  const web = await webService.startService({
+    port: PORT,
+    services: [alert, email, phone, monitor],
+  });
+};
+
+startTitan()
+  .then(() => {
+    console.log(`server started on ${PORT}`);
+  })
+  .catch(console.error);

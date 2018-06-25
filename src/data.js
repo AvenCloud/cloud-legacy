@@ -42,68 +42,55 @@ function getTestClient() {
   };
 }
 
-function getMinioClient() {
-  const Minio = require('minio');
-
-  const storage = require('@google-cloud/storage')();
-
-  const m = new Minio.Client({
-    endPoint: config.STORAGE_HOST,
-    secure: !!config.STORAGE_SECURE,
-    accessKey: config.STORAGE_ACCESS,
-    secretKey: config.STORAGE_KEY,
-  });
-
-  const bucket = config.STORAGE_BUCKET;
-  const gBucket = storage.bucket(bucket);
-
+function getPostgresClient() {
   return {
     async getFile(name) {
-      try {
-        const data = await m.getObject(bucket, name);
-        const body = await getRawBody(data);
-        console.log('ok gotcha', name, body, data);
-        return body;
-      } catch (e) {
-        return null;
-      }
+      // try {
+      //   const data = await m.getObject(bucket, name);
+      //   const body = await getRawBody(data);
+      //   console.log('ok gotcha', name, body, data);
+      //   return body;
+      // } catch (e) {
+      //   return null;
+      // }
+      return null;
     },
     async putFile(name, buffer) {
-      var s = new Readable();
-      s.push(buffer);
-      s.push(null);
-      const eTag = await m.putObject(bucket, name, s);
-      console.log('put file with eTag!', eTag);
-      return eTag;
+      // var s = new Readable();
+      // s.push(buffer);
+      // s.push(null);
+      // const eTag = await m.putObject(bucket, name, s);
+      // console.log('put file with eTag!', eTag);
+      // return eTag;
     },
     async copyFile(from, to) {
-      const { resource } = await gBucket.file(from).copy(to);
-      return resource.etag;
+      // const { resource } = await gBucket.file(from).copy(to);
+      // return resource.etag;
     },
 
     async destroyFile(name) {
-      await m.removeObject(bucket, name);
+      // await m.removeObject(bucket, name);
     },
 
     list() {
-      const objectStream = m.listObjects(bucket);
-      const files = [];
-      objectStream.on('data', obj => {
-        files.push(obj);
-      });
-      return new Promise((resolve, reject) => {
-        objectStream.on('error', err => {
-          reject(err);
-        });
-        objectStream.on('end', err => {
-          resolve(files);
-        });
-      });
+      // const objectStream = m.listObjects(bucket);
+      // const files = [];
+      // objectStream.on('data', obj => {
+      //   files.push(obj);
+      // });
+      // return new Promise((resolve, reject) => {
+      //   objectStream.on('error', err => {
+      //     reject(err);
+      //   });
+      //   objectStream.on('end', err => {
+      //     resolve(files);
+      //   });
+      // });
     },
   };
 }
 
-const client = useTestClient ? getTestClient() : getMinioClient();
+const client = useTestClient ? getTestClient() : getPostgresClient();
 
 export async function getObject(id) {
   const data = await client.getFile(id);
