@@ -36,11 +36,13 @@ app.post('/update', bodyParser.json({
 	console.log('restart titan', result3.toString());
 
 	const rsync = exec('rsync', ['.','root@hyperion.aven.cloud:/cloud','-r', '--exclude', 'node_modules', '--delete-after']);
-	console.log('restart titan', rsync.toString());
+	console.log('sync code to hyperion', rsync.toString());
 
 
 	const hyperion = exec('ssh', ['root@hyperion.aven.cloud','-t', "systemctl restart hyperion"]);
 	console.log('restart hyperion', hyperion.toString());
+
+	console.log('deploy complete!')
 
 	res.send('thanks github');
 })

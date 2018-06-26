@@ -1,5 +1,4 @@
-
-variable "do_token" {
+variable "digitalocean_token" {
   description = "Digital Ocean Secret Key"
 }
 
@@ -12,11 +11,11 @@ variable "cloudflare_token" {
 }
 
 variable "name" {
-  description = "Name of new server or cluster"
+  description = "Name of server or cluster"
 }
 
 provider "digitalocean" {
-  token = "${var.do_token}"
+  token = "${var.digitalocean_token}"
 }
 
 provider "cloudflare" {
@@ -25,44 +24,66 @@ provider "cloudflare" {
 }
 
 resource "digitalocean_ssh_key" "ssh" {
-    name = "Terraform DO Example"
-    public_key = "${file("digital_ocean_key.pub")}"
+  name       = "DigitalOcean SSH Key"
+  public_key = "${file("digital_ocean_key.pub")}"
 }
 
-
-resource "digitalocean_droplet" "mywebserver" {
-  ssh_keys = ["${digitalocean_ssh_key.ssh.id}"]  
+resource "digitalocean_droplet" "hera" {
+  ssh_keys           = ["${digitalocean_ssh_key.ssh.id}"]
   image              = "ubuntu-18-04-x64"
   region             = "nyc3"
   size               = "s-1vcpu-1gb"
   private_networking = true
   name               = "${var.name}"
 
+  count = "3"
+
   provisioner "remote-exec" {
-    inline = [
-      "export PATH=$PATH:/usr/bin",
-      "sudo apt update",
-      "sudo apt -y upgrade",
-      "sudo apt -y install nginx",
-    ]
+    script = "hera-setup.sh"
 
     connection {
-      type     = "ssh"
+      type        = "ssh"
       private_key = "${file("digital_ocean_key")}"
-      user     = "root"
-      timeout  = "2m"
+      user        = "root"
+      timeout     = "2m"
     }
   }
 }
 
-resource "digitalocean_domain" "cruz-aven-cloud" {
-  name       = "${}.aven.cloud"
-  ip_address = "${digitalocean_droplet.mywebserver.ipv4_address}"
+resource "digitalocean_loadbalancer" "public" {
+  name   = "loadbalance-${var.name}"
+  region = "nyc3"
+
+  forwarding_rule {
+    entry_port     = 80
+    entry_protocol = "http"
+
+    target_port     = 80
+    target_protocol = "http"
+  }
+
+  forwarding_rule {
+    entry_port     = 443
+    entry_protocol = "https"
+
+    target_port     = 443
+    target_protocol = "https"
+
+    tls_passthrough = true
+  }
+
+  healthcheck {
+    port     = 22
+    protocol = "tcp"
+  }
+
+  droplet_ids = ["${digitalocean_droplet.hera.*.id}"]
 }
 
-resource "digitalocean_record" "cruz" {
-  domain = "${digitalocean_domain.cruz-aven-cloud.name}"
+resource "cloudflare_record" "www" {
+  domain = "aven.cloud"
+  name   = "${var.name}"
+  value  = "${digitalocean_loadbalancer.public.ip}"
   type   = "A"
-  name   = "cruz"
-  value  = "${digitalocean_droplet.mywebserver.ipv4_address}"
+  ttl    = 3600
 }
