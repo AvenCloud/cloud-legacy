@@ -77,6 +77,34 @@ AND    i.indisprimary;
     return indexes;
   }
 
+  async function migrateColumnRef(tableName, columnName, column) {
+    const constraintName = `${tableName}_${columnName}_fkey`;
+    const lastConstraints = await pg.query(`
+    SELECT
+    tc.constraint_name, tc.table_name, kcu.column_name, 
+    ccu.table_name AS foreign_table_name,
+    ccu.column_name AS foreign_column_name 
+FROM 
+    information_schema.table_constraints AS tc 
+    JOIN information_schema.key_column_usage AS kcu
+      ON tc.constraint_name = kcu.constraint_name
+    JOIN information_schema.constraint_column_usage AS ccu
+      ON ccu.constraint_name = tc.constraint_name
+WHERE constraint_type = 'FOREIGN KEY'
+`);
+    if (lastConstraints.rows.find(r => r.constraint_name === constraintName)) {
+      return;
+    }
+    const sourceRefs = Object.keys(column.ref).filter(r => r[0] !== '_');
+    await pg.query(
+      `ALTER TABLE ${tableName} ADD CONSTRAINT ${constraintName} FOREIGN KEY (${sourceRefs.join(
+        ', ',
+      )}) REFERENCES ${column.ref._table}(${sourceRefs
+        .map(r => column.ref[r])
+        .join(', ')}) ${column.ref._cascadeDelete ? 'ON DELETE CASCADE' : ''}`,
+    );
+  }
+
   async function migrateColumn(tableName, columnName, lastColumn, column) {
     const sqlType = getSqlType(column.columnType);
     if (lastColumn && lastColumn.dataType === sqlType.toLowerCase()) {
@@ -133,6 +161,15 @@ AND    i.indisprimary;
     }
 
     await migrateTablePrimaryIndex(name, tableSchema.primary);
+
+    for (let i = 0; i < columnNames.length; i++) {
+      const columnName = columnNames[i];
+      const column = tableSchema.columns[columnName];
+
+      if (column.ref) {
+        await migrateColumnRef(name, columnName, column);
+      }
+    }
   }
 
   async function migrate() {
@@ -154,12 +191,13 @@ AND    i.indisprimary;
 
   async function putObject({ object }) {
     const objData = stringify(object);
+    const size = objData.length;
     const sha = crypto.createHash('sha1');
     sha.update(objData);
     const id = sha.digest('hex');
     await pg.query(
-      'INSERT INTO objects (id, json) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-      [id, object],
+      'INSERT INTO objects (id, json, size) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+      [id, object, size],
     );
     return { id };
   }
@@ -169,7 +207,7 @@ AND    i.indisprimary;
 
   async function getRef({ domain, ref }) {
     const res = await pg.query(
-      'SELECT owner, active_object FROM refs WHERE id = $1 AND domain = $2',
+      'SELECT owner, active_object, is_public FROM refs WHERE id = $1 AND domain = $2',
       [ref, domain],
     );
     if (res.rowCount < 1) {
@@ -177,7 +215,8 @@ AND    i.indisprimary;
     }
     const { owner } = res.rows[0];
     const id = res.rows[0].active_object;
-    return { id, ref, domain, owner };
+    const isPublic = res.rows[0].is_public;
+    return { id, ref, domain, owner, isPublic };
   }
 
   async function getObject({ id }) {
@@ -187,6 +226,18 @@ AND    i.indisprimary;
     }
     const object = res.rows[0].json;
     return { id, object };
+  }
+
+  async function getObjectViaRef({ id, ref, domain }) {
+    const res = await pg.query(
+      'SELECT objects.json, objects.binary FROM objects, object_refs WHERE object_refs.object = objects.id AND object_refs.object = $1 AND object_refs.ref = $2 AND object_refs.domain = $3',
+      [id, ref, domain],
+    );
+    if (res.rowCount < 1) {
+      return null;
+    }
+    const object = res.rows[0].json;
+    return { id, ref, object };
   }
 
   async function getRefObject({ domain, ref }) {
@@ -209,10 +260,10 @@ AND    i.indisprimary;
     );
   }
 
-  async function ensureRef(domain, ref) {
+  async function ensureRef(domain, ref, defaultOwner) {
     await pg.query(
-      'INSERT INTO refs (id, domain) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-      [ref, domain],
+      'INSERT INTO refs (id, domain, owner) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+      [ref, domain, defaultOwner],
     );
   }
 
@@ -223,18 +274,33 @@ AND    i.indisprimary;
     );
   }
 
-  async function setActiveRefObject(domain, ref, objectId) {
+  async function setRefActiveObject({ domain, ref, id }) {
     await pg.query(
       'UPDATE refs SET active_object = $3 WHERE id = $1 AND domain = $2 ',
-      [ref, domain, objectId],
+      [ref, domain, id],
     );
   }
+  async function destroyRefObjects({ domain, ref }) {
+    await pg.query('DELETE FROM object_refs WHERE domain = $1 AND ref = $2 ', [
+      domain,
+      ref,
+    ]);
+  }
+
+  async function destroyRef({ domain, ref }) {
+    await pg.query('DELETE FROM refs WHERE domain = $1 AND ref = $2 ', [
+      ref,
+      domain,
+    ]);
+  }
+
   async function setRefOwner(domain, ref, owner) {
     await pg.query(
       'UPDATE refs SET owner = $3 WHERE id = $1 AND domain = $2 ',
       [ref, domain, owner],
     );
   }
+
   async function setRefIsPublic({ domain, ref, isPublic }) {
     await pg.query(
       'UPDATE refs SET is_public = $1 WHERE id = $2 AND domain = $3',
@@ -242,21 +308,50 @@ AND    i.indisprimary;
     );
   }
 
-  async function putPermission(domain, ref, user, role) {
-    await pg.query(
-      'INSERT INTO permissions (ref, domain, permission, role) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING',
-      [domain, ref, role, permission],
+  async function listRefObjects({ domain, ref }) {
+    const result = await pg.query(
+      'SELECT objects.id, objects.size FROM objects, object_refs WHERE object_refs.object = objects.id AND object_refs.domain = $1 AND object_refs.ref = $2',
+      [domain, ref],
     );
+    return result.rows;
   }
 
-  async function putRefObject({ domain, ref, object, owner }) {
+  async function putRefPermission({ domain, ref, owner, permission }) {
+    await pg.query('BEGIN');
+    try {
+      await pg.query(
+        'DELETE FROM permissions WHERE ref = $1 AND domain = $2 AND owner = $3',
+        [domain, ref, owner],
+      );
+      await pg.query(
+        'INSERT INTO permissions (ref, domain, owner, permission) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING',
+        [ref, domain, owner, permission],
+      );
+      await pg.query('COMMIT');
+    } catch (e) {
+      console.error(e);
+      await pg.query('ROLLBACK');
+      throw e;
+    }
+  }
+
+  async function getRefPermissions({ domain, ref }) {
+    const result = await pg.query(
+      'SELECT permission, owner FROM permissions WHERE domain = $1 AND ref = $2',
+      [domain, ref],
+    );
+    return result.rows;
+  }
+
+  async function putRefObject({ domain, ref, object, owner, defaultOwner }) {
+    console.log(domain, ref, object, owner, defaultOwner);
     await pg.query('BEGIN');
     try {
       await ensureDomain(domain);
-      await ensureRef(domain, ref);
+      await ensureRef(domain, ref, defaultOwner);
       const { id } = await putObject({ object });
       await ensureObjectRef(domain, ref, id);
-      await setActiveRefObject(domain, ref, id);
+      await setRefActiveObject({ domain, ref, id });
       owner && (await setRefOwner(domain, ref, owner));
       await pg.query('COMMIT');
     } catch (e) {
@@ -274,8 +369,15 @@ AND    i.indisprimary;
     putBinaryObject,
     putObject,
     getObject,
+    getObjectViaRef,
     getRef,
+    listRefObjects,
+    getRefPermissions,
     setRefIsPublic,
+    setRefActiveObject,
+    destroyRefObjects,
+    destroyRef,
+    putRefPermission,
     getRefObject,
     status,
   };

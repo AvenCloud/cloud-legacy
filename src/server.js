@@ -13,7 +13,7 @@ import { pageColor } from './common';
 import emailAuthMethod from '../auth.service/methods/emailAuthMethod';
 import phoneAuthMethod from '../auth.service/methods/phoneAuthMethod';
 const emailService = require('../email.service/email.service');
-const phoneService = require('../email.service/email.service');
+const phoneService = require('../phone.service/phone.service');
 const dbService = require('../db.service/db.service');
 const authService = require('../auth.service/auth.service');
 

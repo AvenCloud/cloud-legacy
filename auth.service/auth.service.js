@@ -1,9 +1,11 @@
 import { uuid, hashSecureString, genKey, checksum } from '../src/utils';
 import {
   PERMISSION,
-  getPermissionForRuleName,
+  getRefPermissionForRuleName,
   addPermissions,
 } from '../src/permission';
+
+const ADMIN_USERS = new Set(process.env.ADMIN_USERS.split(','));
 
 export const startService = ({ db, name, authMethods }) => {
   name = name || `auth-${uuid()}`;
@@ -19,7 +21,7 @@ export const startService = ({ db, name, authMethods }) => {
     if (!AuthMethod) {
       throw new Error('Invalid authMethod');
     }
-    const authRef = AuthMethod.getAuthRef(authInfo, authName);
+    const authRef = AuthMethod.getAuthRef({ ...authInfo, authName });
     const authObjectRef = await db.actions.getRefObject({
       domain,
       ref: authRef,
@@ -51,19 +53,23 @@ export const startService = ({ db, name, authMethods }) => {
     }
   }
 
-  async function getPermission({
+  async function getRefPermission({
     domain,
     authName,
-    authKey,
     authSession,
+    authKey,
     ref,
   }) {
     const refResult = await db.actions.getRef({ domain, ref });
+
     const isPublic = !!refResult && refResult.isPublic;
     try {
       await verifySession({ domain, authName, authKey, authSession });
     } catch (e) {
       return isPublic ? PERMISSION.READ : PERMISSION.NONE;
+    }
+    if (ADMIN_USERS.has(authName)) {
+      return PERMISSION.ADMIN;
     }
     if (`~${authName}` === ref) {
       return PERMISSION.ADMIN;
@@ -75,17 +81,15 @@ export const startService = ({ db, name, authMethods }) => {
   }
 
   const actions = {
-    createDoc: async ({ foo, bar }) => {
-      // await db.actions.putObject({ object: { great: 'news, everybody!' } });
-      return { allowed: 42 };
-    },
+    verifySession,
+    getRefPermission,
 
-    getRefObject: async ({ domain, authName, authKey, authSession, ref }) => {
-      const permission = await getPermission({
+    getRefObject: async ({ domain, authName, authSession, authKey, ref }) => {
+      const permission = await getRefPermission({
         domain,
         authName,
-        authKey,
         authSession,
+        authKey,
         ref,
       });
       if (!permission.canRead) {
@@ -97,22 +101,96 @@ export const startService = ({ db, name, authMethods }) => {
       });
     },
 
-    putRefObject: async ({ domain, ref, object, lastId }) => {
-      const permission = await getPermission({
+    getObject: async ({ domain, authName, authSession, authKey, ref, id }) => {
+      const permission = await getRefPermission({
         domain,
         authName,
-        authKey,
         authSession,
+        authKey,
+        ref,
+      });
+      if (!permission.canRead) {
+        return null;
+      }
+      return await db.actions.getObjectViaRef({
+        domain,
+        ref,
+        id,
+      });
+    },
+
+    putRefObject: async ({
+      domain,
+      authName,
+      authSession,
+      authKey,
+      ref,
+      object,
+      lastId,
+    }) => {
+      const permission = await getRefPermission({
+        domain,
+        authName,
+        authSession,
+        authKey,
         ref,
       });
       if (!permission.canWrite) {
-        return null;
+        throw new Error('Invalid permission');
       }
       return await db.actions.putRefObject({
         domain,
         ref,
         object,
+        defaultOwner: `~${authName}`,
       });
+    },
+
+    putRefPermission: async ({
+      domain,
+      authName,
+      authSession,
+      authKey,
+      ref,
+      owner,
+      permission,
+    }) => {
+      const actorPermission = await getRefPermission({
+        domain,
+        authName,
+        authSession,
+        authKey,
+        ref,
+      });
+      if (!actorPermission.canAdmin) {
+        throw new Error('Invalid permission');
+      }
+      await db.actions.putRefPermission({
+        domain,
+        ref,
+        owner: `~${owner}`,
+        permission,
+      });
+    },
+
+    getRefPermissions: async ({
+      domain,
+      authName,
+      authSession,
+      authKey,
+      ref,
+    }) => {
+      const actorPermission = await getRefPermission({
+        domain,
+        authName,
+        authSession,
+        authKey,
+        ref,
+      });
+      if (!actorPermission.canAdmin) {
+        throw new Error('Invalid permission');
+      }
+      return db.actions.getRefPermissions({ domain, ref });
     },
 
     destroyRefObject: async ({
@@ -124,7 +202,34 @@ export const startService = ({ db, name, authMethods }) => {
       id,
     }) => {},
 
-    destroyRef: async ({ domain, authName, authSession, authKey, ref }) => {},
+    clearRef: async ({ domain, authName, authSession, authKey, ref }) => {
+      const permission = await getRefPermission({
+        domain,
+        authName,
+        authKey,
+        authSession,
+        ref,
+      });
+      if (!permission.canForce) {
+        throw new Error('Insufficient permission');
+      }
+      await db.actions.destroyRefObjects({ domain, ref });
+      await db.actions.setRefActiveObject({ domain, ref, id: null });
+    },
+
+    listRefObjects: async ({ domain, authName, authSession, authKey, ref }) => {
+      const permission = await getRefPermission({
+        domain,
+        authName,
+        authKey,
+        authSession,
+        ref,
+      });
+      if (!permission.canForce) {
+        throw new Error('Insufficient permission');
+      }
+      return await db.actions.listRefObjects({ domain, ref });
+    },
 
     setRefIsPublic: async ({
       domain,
@@ -134,7 +239,7 @@ export const startService = ({ db, name, authMethods }) => {
       ref,
       isPublic,
     }) => {
-      const permission = await getPermission({
+      const permission = await getRefPermission({
         domain,
         authName,
         authKey,
@@ -172,6 +277,8 @@ export const startService = ({ db, name, authMethods }) => {
       const { authChallenge } = newAuthData;
       return { authChallenge };
     },
+
+    accountPutAuth: async ({ foo, bar }) => {},
 
     accountCreate: async ({
       domain,

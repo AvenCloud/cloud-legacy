@@ -7,6 +7,8 @@ const getSqlType = columnType => {
       return 'JSON';
     case 'binary':
       return 'BYTEA';
+    case 'int':
+      return 'INTEGER';
     case 'enum':
       return 'TEXT';
     case 'boolean':
@@ -19,12 +21,11 @@ const TableSchema = ({ columns, primary }) => ({
   columns,
   primary,
 });
-const ColumnSchema = (type, { options, refToTable, refToColumn } = {}) => ({
+const ColumnSchema = (type, { options, ref } = {}) => ({
   type: 'column',
   columnType: type,
   options,
-  refToTable,
-  refToColumn,
+  ref,
 });
 
 const schema = DBSchema({
@@ -38,6 +39,7 @@ const schema = DBSchema({
     objects: TableSchema({
       columns: {
         id: ColumnSchema('shortstring'),
+        size: ColumnSchema('int'),
         json: ColumnSchema('json'),
         binary: ColumnSchema('binary'),
       },
@@ -47,54 +49,82 @@ const schema = DBSchema({
       columns: {
         id: ColumnSchema('shortstring'),
         domain: ColumnSchema('shortstring', {
-          refToTable: 'domains',
-          refToColumn: 'name',
+          ref: {
+            _table: 'domains',
+            domain: 'name',
+          },
         }),
         is_public: ColumnSchema('boolean'),
         owner: ColumnSchema('shortstring', {
-          refToTable: 'refs',
-          refToColumn: 'id',
+          ref: {
+            _table: 'refs',
+            owner: 'id',
+            domain: 'domain',
+          },
         }),
         active_object: ColumnSchema('shortstring', {
-          refToTable: 'objects',
-          refToColumn: 'id',
+          ref: {
+            _table: 'objects',
+            active_object: 'id',
+          },
         }),
       },
       primary: ['domain', 'id'],
     }),
     permissions: TableSchema({
       columns: {
-        role: ColumnSchema('shortstring', {
-          refToTable: 'refs',
-          refToColumn: 'id',
+        owner: ColumnSchema('shortstring', {
+          ref: {
+            _table: 'refs',
+            _cascadeDelete: true,
+            owner: 'id',
+            domain: 'domain',
+          },
         }),
         ref: ColumnSchema('shortstring', {
-          refToTable: 'refs',
-          refToColumn: 'id',
+          ref: {
+            _table: 'refs',
+            _cascadeDelete: true,
+            ref: 'id',
+            domain: 'domain',
+          },
         }),
         domain: ColumnSchema('shortstring', {
-          refToTable: 'domains',
-          refToName: 'name',
+          ref: {
+            _table: 'domains',
+            _cascadeDelete: true,
+            domain: 'name',
+          },
         }),
         permission: ColumnSchema('enum', {
           options: ['read', 'write', 'force', 'admin'],
         }),
       },
-      primary: ['ref', 'permission', 'role', 'domain'],
+      primary: ['ref', 'permission', 'owner', 'domain'],
     }),
     object_refs: TableSchema({
       columns: {
         ref: ColumnSchema('shortstring', {
-          refToTable: 'refs',
-          refToColumn: 'id',
+          ref: {
+            _table: 'refs',
+            _cascadeDelete: true,
+            ref: 'id',
+            domain: 'domain',
+          },
         }),
         domain: ColumnSchema('shortstring', {
-          refToTable: 'domains',
-          refToColumn: 'name',
+          ref: {
+            _table: 'domains',
+            _cascadeDelete: true,
+            domain: 'name',
+          },
         }),
         object: ColumnSchema('shortstring', {
-          refToTable: 'objects',
-          refToColumn: 'id',
+          ref: {
+            _table: 'objects',
+            _cascadeDelete: true,
+            object: 'id',
+          },
         }),
       },
       primary: ['ref', 'object'],

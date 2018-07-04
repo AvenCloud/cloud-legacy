@@ -2,6 +2,7 @@ import React from 'react';
 import { Page, Title, P } from './common';
 import Teaser from './Teaser';
 import Dashboard from './Dashboard';
+import Register from './Register';
 import Login from './Login';
 import { createSwitchNavigator } from '@react-navigation/core';
 
@@ -40,6 +41,7 @@ const AppNavigator = createSwitchNavigator(
     Teaser,
     docs: Docs,
     login: Login,
+    register: Register,
     about: About,
     home: Home,
     dashboard: Dashboard,

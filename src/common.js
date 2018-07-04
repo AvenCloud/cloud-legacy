@@ -165,6 +165,7 @@ export const Page = ({ children }) => (
             <HeaderLink title="Docs" to="docs" />
             <HeaderLink title="Blog" to="about" />
             <HeaderLink title="Dashboard" to="dashboard" />
+            <HeaderLink title="Register" to="register" />
             <HeaderLink title="Login" to="login" />
           </View>
         </View>
@@ -227,9 +228,9 @@ export const Button = ({ onPress, title }) => (
   </MaterialButton>
 );
 
-export const FormSubmit = () => (
+export const FormSubmit = ({ submitForm }) => (
   <View style={{ alignSelf: 'center' }}>
-    <MaterialButton variant="contained" color="primary">
+    <MaterialButton variant="contained" color="primary" onClick={submitForm}>
       Submit
     </MaterialButton>
   </View>
@@ -265,8 +266,10 @@ export class Form extends React.Component {
             setValues,
             handleBlur,
             isSubmitting,
+            submitForm,
           }) =>
             this.props.render({
+              submitForm,
               createField: id => {
                 return {
                   value: values[id],

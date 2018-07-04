@@ -2,7 +2,7 @@ import { checksum, genAuthCode } from '../../src/utils';
 import { object, string } from 'yup';
 
 const VERIFICATION_TIMEOUT_HOURS = 2;
-
+// todo, reduce copy-pasta between here and phone auth method
 const SITE_NAME = 'Aven';
 
 const registerTemplate = params => ({
@@ -79,6 +79,7 @@ export default function emailAuthMethod({ email }) {
     const verificationCode = await genAuthCode();
 
     const emailTemplate = getTemplate(authInfo.context);
+
     await email.actions.sendEmail({
       to,
       ...emailTemplate({ verificationCode }),
@@ -103,7 +104,6 @@ export default function emailAuthMethod({ email }) {
     ) {
       throw new Error('Invalid email verification. Please try again.');
     }
-    // check expiration time against authData.verificationRequestTime
     if (
       authData.verificationRequestTime +
         1000 * 60 * 60 * VERIFICATION_TIMEOUT_HOURS <

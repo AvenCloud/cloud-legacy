@@ -9,17 +9,16 @@ class LoginWithA extends React.Component {
       <Page>
         <Title>Login</Title>
         <Form
-          onSubmit={() => {
-            aven.login;
+          onSubmit={a => {
             debugger;
           }}
-          render={({ createField }) => (
+          render={({ createField, submitForm }) => (
             <React.Fragment>
               <FormInput
                 label="Username or Phone or Email"
                 field={createField('authName')}
               />
-              <FormSubmit />
+              <FormSubmit submitForm={submitForm} />
             </React.Fragment>
           )}
         />

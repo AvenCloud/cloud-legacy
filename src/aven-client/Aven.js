@@ -72,6 +72,7 @@ export default class Aven extends Container {
       },
       body: JSON.stringify(action),
     });
+    console.log('response! ', action, res.status);
     return await res.json();
   }
 
@@ -109,7 +110,7 @@ export default class Aven extends Container {
 
   async authRequest(authMethod, authInfo) {
     const requestData = await this.dispatch({
-      type: 'AuthRequest',
+      type: 'authRequest',
       authMethod,
       authInfo,
     });
@@ -127,7 +128,7 @@ export default class Aven extends Container {
 
   async accountCreate({ authName, authResponse }) {
     const accountCreateResponse = await this.dispatchWithDomain({
-      type: 'AccountCreate',
+      type: 'accountCreate',
       authName,
       authMethod: this.state.authRequestMethod,
       authInfo: this.state.authRequestInfo,
@@ -141,12 +142,14 @@ export default class Aven extends Container {
       authSession: accountCreateResponse.authSession,
       authName: accountCreateResponse.authName,
     });
+    debugger;
   }
 
   async sessionDestroy() {
     if (!this.state.authSession) {
       return;
     }
+    const { authName } = this.state;
     this.setState({
       // Always destroy this key!
       authKey: null,
@@ -155,9 +158,10 @@ export default class Aven extends Container {
     });
     // todo: flush local data
 
-    // This query can be retried if the network fails, but the local session unusable without the key
+    // This query can be retried if the network fails, but the local session unusable without the key which we threw away
     await this.dispatchWithDomain({
-      type: 'SessionDestroy',
+      type: 'sessionDestroy',
+      authName,
       authSession: this.state.authSession,
     });
     await this.setState({
