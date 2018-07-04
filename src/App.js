@@ -1,6 +1,7 @@
 import React from 'react';
 import { Page, Title, P } from './common';
 import Teaser from './Teaser';
+import Dashboard from './Dashboard';
 import Login from './Login';
 import { createSwitchNavigator } from '@react-navigation/core';
 
@@ -41,6 +42,7 @@ const AppNavigator = createSwitchNavigator(
     login: Login,
     about: About,
     home: Home,
+    dashboard: Dashboard,
   },
   {
     navigationOptions: ({ navigation, navigationOptions }) => {

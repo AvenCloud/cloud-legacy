@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { withNavigation } from '@react-navigation/core';
 import { Formik } from 'formik';
+import MaterialButton from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
 
 const pageWidth = 1200;
 const pagePadding = 30;
@@ -19,6 +21,15 @@ const headerLinkColor = '#778';
 const headerLinkActiveColor = '#112';
 const textColor = '#223';
 export const pageColor = '#f9f9fc';
+
+export const Colors = {
+  activeBg,
+  headerLink: headerLinkColor,
+  headerLinkActive: headerLinkActiveColor,
+  text: textColor,
+  page: pageColor,
+  header: '#323232',
+};
 
 const LinkViewWithNav = ({
   navigation,
@@ -50,7 +61,7 @@ const LinkViewWithNav = ({
 };
 export const LinkView = withNavigation(LinkViewWithNav);
 
-export const SidebarLink = ({ navigation, title, to }) => {
+export const SidebarLink = ({ navigation, title, to, icon }) => {
   return (
     <LinkView
       feedback="highlight"
@@ -66,6 +77,7 @@ export const SidebarLink = ({ navigation, title, to }) => {
           style={{
             color: isActive ? 'white' : textColor,
           }}>
+          {icon}
           {title}
         </Text>
       )}
@@ -82,7 +94,7 @@ export const Sidebar = ({ children }) => (
     <ScrollView
       style={{
         maxWidth: 300,
-        backgroundColor: '#eee',
+        backgroundColor: '#fafafa',
         height: '100%',
       }}
       contentContainerStyle={{ minHeight: '100%', paddingVertical: 10 }}>
@@ -152,6 +164,7 @@ export const Page = ({ children }) => (
           <View style={{ marginHorizontal: pagePadding, flexDirection: 'row' }}>
             <HeaderLink title="Docs" to="docs" />
             <HeaderLink title="Blog" to="about" />
+            <HeaderLink title="Dashboard" to="dashboard" />
             <HeaderLink title="Login" to="login" />
           </View>
         </View>
@@ -172,9 +185,13 @@ export const Page = ({ children }) => (
         <View
           style={{
             marginHorizontal: pagePadding,
-            borderWidth: 1,
-            borderColor: '#aaa',
             backgroundColor: '#fdfdff',
+            shadowOpacity: 0.55,
+            shadowRadius: 9,
+            borderRadius: 6,
+            shadowColor: '#336',
+            shadowOffset: { height: 0, width: 0 },
+            overflow: 'hidden',
           }}>
           {children}
         </View>
@@ -194,43 +211,74 @@ export const P = ({ children }) => (
   </View>
 );
 
-export const FormInput = () => <TextInput />;
-export const FormSubmit = () => <TextInput />;
+export const FormInput = ({ label, id, field }) => (
+  <TextField
+    id={id}
+    label={label}
+    value={field.value || ''}
+    onChange={field.onChange}
+    margin="normal"
+  />
+);
+
+export const Button = ({ onPress, title }) => (
+  <MaterialButton variant="outlined" color="default" onClick={onPress}>
+    {title}
+  </MaterialButton>
+);
+
+export const FormSubmit = () => (
+  <View style={{ alignSelf: 'center' }}>
+    <MaterialButton variant="contained" color="primary">
+      Submit
+    </MaterialButton>
+  </View>
+);
 
 export class Form extends React.Component {
   render() {
     return (
-      <Formik
-        initialValues={{
-          nameOrEmailOrPhone: '',
-          password: '',
-        }}
-        validate={values => {
-          const errors = {};
-          if (values.password.length < 6) {
-            return (errors.password = 'Enter full password');
-          }
-          return errors;
-        }}
-        onSubmit={this.props.onSubmit}
-        render={({
-          values,
-          errors,
-          touched,
-          handleChange,
-          handleBlur,
-          isSubmitting,
-        }) =>
-          this.props.render({
+      <View
+        style={{
+          maxWidth: 550,
+          minWidth: 300,
+          marginVertical: 20,
+          alignSelf: 'center',
+        }}>
+        <Formik
+          initialValues={{
+            nameOrEmailOrPhone: '',
+            password: '',
+          }}
+          validate={values => {
+            const errors = {};
+            // if (values.password.length < 6) {
+            //   return (errors.password = 'Enter full password');
+            // }
+            return errors;
+          }}
+          onSubmit={this.props.onSubmit}
+          render={({
             values,
             errors,
             touched,
-            handleChange,
+            setValues,
             handleBlur,
             isSubmitting,
-          })
-        }
-      />
+          }) =>
+            this.props.render({
+              createField: id => {
+                return {
+                  value: values[id],
+                  onChange: e => {
+                    setValues({ [id]: e.nativeEvent.target.value });
+                  },
+                };
+              },
+            })
+          }
+        />
+      </View>
     );
   }
 }

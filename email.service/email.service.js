@@ -9,14 +9,14 @@ const startService = ({ sendgridKey, defaultFromEmail, name }) => {
 
   const actions = {
     sendEmail: async ({ to, subject, message, from, fromName }) => {
-      const finalFromEmail = from || defaultFromEmail;
+      const finalFromEmail = from ? `${fromName} <${from}>` : defaultFromEmail;
 
       await sg.send({
         to,
         from: finalFromEmail,
         subject,
         text: message,
-        // html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+        // html: '<strong>coming soon</strong>',
       });
     },
   };

@@ -2,13 +2,20 @@ import express from 'express';
 import { json } from 'body-parser';
 import ReactDOMServer from 'react-dom/server';
 import { AppRegistry } from 'react-native';
-import dispatch from './dispatch';
+import createDispatcher from './dispatch';
 import App from './App';
 import { handleServerRequest } from '@react-navigation/web';
 import startWSServer from './startWSServer';
 import http from 'http';
 import { config } from './config';
 import { pageColor } from './common';
+
+import emailAuthMethod from '../auth.service/methods/emailAuthMethod';
+import phoneAuthMethod from '../auth.service/methods/phoneAuthMethod';
+const emailService = require('../email.service/email.service');
+const phoneService = require('../email.service/email.service');
+const dbService = require('../db.service/db.service');
+const authService = require('../auth.service/auth.service');
 
 const yes = require('yes-https');
 const helmet = require('helmet');
@@ -31,24 +38,10 @@ export default async function startServer(inputConfig) {
 
   AppRegistry.registerComponent('App', () => App);
 
-  server.post('/api', json(), async (req, res) => {
-    try {
-      const result = await dispatch(req.body);
-      res.send(JSON.stringify(result));
-    } catch (e) {
-      const error = { ...e, message: e.message };
-      if (!error.message) {
-        console.error('Experienced API error without proper formatting!', e);
-      }
-      res.status(400).send({ error });
-    }
-  });
-
   server.get('/*', (req, res) => {
     const { path, query } = req;
 
     const { navigation, title } = handleServerRequest(App.router, path, query);
-    // const { navigation, title } = { navigation: undefined, title: 'Aven Cloud' };
 
     const { element, getStyleElement } = AppRegistry.getApplication('App', {
       initialProps: {
@@ -76,6 +69,8 @@ export default async function startServer(inputConfig) {
           background-color: ${pageColor};
         }
         </style>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+
         ${css}
         ${
           process.env.NODE_ENV === 'production'
@@ -97,6 +92,59 @@ export default async function startServer(inputConfig) {
 
   const wsServer = await startWSServer(wss);
 
+  const db = await dbService.startService({
+    user: process.env.PG_USER,
+    host: process.env.PG_HOST,
+    database: process.env.PG_DB,
+    password: process.env.PG_PASS,
+    port: process.env.PG_PORT,
+    ssl: true,
+  });
+
+  const phone = await await phoneService.startService({
+    plivoAuthId: process.env.PLIVO_AUTH_ID,
+    plivoAuthToken: process.env.PLIVO_AUTH_TOKEN,
+    defaultFromNumber: process.env.PLIVO_FROM_NUMBER,
+  });
+  const email = await await emailService.startService({
+    sendgridKey: process.env.SENDGRID_KEY,
+    defaultFromEmail: process.env.DEFAULT_FROM_EMAIL,
+  });
+
+  const auth = await authService.startService({
+    db,
+    authMethods: {
+      email: await emailAuthMethod({
+        email,
+      }),
+      phone: await phoneAuthMethod({
+        phone,
+      }),
+    },
+  });
+
+  const exportActions = { ...auth.actions };
+
+  const dispatch = async action => {
+    if (exportActions[action.type]) {
+      return await exportActions[action.type](action);
+    }
+    throw new Error(`Action "${action.type} not found!`);
+  };
+
+  server.post('/api', json(), async (req, res) => {
+    try {
+      const result = await dispatch(req.body);
+      res.send(JSON.stringify(result));
+    } catch (e) {
+      const error = { ...e, message: e.message };
+      if (!error.message) {
+        console.error('Experienced API error without proper formatting!', e);
+      }
+      res.status(400).send({ error });
+    }
+  });
+
   httpServer.listen(serverConfig.PORT, error => {
     if (error) {
       console.log(error);
@@ -113,6 +161,7 @@ export default async function startServer(inputConfig) {
   const remove = () => {
     httpServer.close();
     wsServer.close();
+    db.remove();
   };
 
   return {

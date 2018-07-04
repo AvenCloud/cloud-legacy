@@ -1,3 +1,11 @@
+variable "server_public_key" {
+  description = "ssh public key"
+}
+
+variable "server_private_key" {
+  description = "ssh private key"
+}
+
 variable "digitalocean_token" {
   description = "Digital Ocean Secret Key"
 }
@@ -25,7 +33,7 @@ provider "cloudflare" {
 
 resource "digitalocean_ssh_key" "ssh" {
   name       = "DigitalOcean SSH Key"
-  public_key = "${file("digital_ocean_key.pub")}"
+  public_key = "${var.server_public_key}"
 }
 
 resource "digitalocean_droplet" "hera" {
@@ -43,7 +51,7 @@ resource "digitalocean_droplet" "hera" {
 
     connection {
       type        = "ssh"
-      private_key = "${file("digital_ocean_key")}"
+      private_key = "${var.server_private_key}"
       user        = "root"
       timeout     = "2m"
     }

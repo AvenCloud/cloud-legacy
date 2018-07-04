@@ -9,9 +9,12 @@
     "precommit": "CI=true yarn build"
   },
   "dependencies": {
-    "@react-navigation/core": "^0.0.0-alpha.8",
-    "@react-navigation/web": "^0.0.0-alpha.8",
+    "@material-ui/core": "^1.3.0",
+    "@material-ui/icons": "^1.1.0",
+    "@react-navigation/core": "^0.0.0-alpha.12",
+    "@react-navigation/web": "^0.0.0-alpha.12",
     "@sendgrid/mail": "^6.2.1",
+    "add": "^2.0.6",
     "bcrypt": "^2.0.1",
     "body-parser": "^1.18.3",
     "dotenv": "^5.0.1",
@@ -20,6 +23,7 @@
     "fs-extra": "^6.0.1",
     "gun": "^0.9.997",
     "helmet": "^3.12.1",
+    "json-stable-stringify": "^1.0.1",
     "minio": "^5.0.2",
     "node-fetch": "^2.1.2",
     "pg": "^7.4.3",
@@ -31,11 +35,13 @@
     "react-dom": "^16.4.0",
     "react-native-formik": "^1.5.0",
     "react-native-paper": "^1.9.1",
+    "react-native-vector-icons": "^4.6.0",
     "react-native-web": "^0.7.3",
     "socket.io": "^2.1.1",
     "unstated": "^2.1.1",
     "uuid": "^3.2.1",
     "ws": "^5.2.0",
+    "yarn": "^1.7.0",
     "yes-https": "^0.0.4",
     "yup": "^0.25.1"
   }

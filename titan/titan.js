@@ -5,6 +5,7 @@ const emailService = require('../email.service/email.service');
 const webService = require('../web.service/web.service');
 const alertService = require('../alert.service/alert.service');
 const monitorService = require('../monitor.service/monitor.service');
+const dbService = require('../db.service/db.service');
 
 const PORT = 8888;
 
@@ -33,9 +34,18 @@ const startTitan = async () => {
     monitorHost: 'hyperion.aven.cloud',
   });
 
+  const db = await dbService.startService({
+    user: process.env.PG_USER,
+    host: process.env.PG_HOST,
+    database: process.env.PG_DB,
+    password: process.env.PG_PASS,
+    port: process.env.PG_PORT,
+    ssl: true,
+  });
+
   const web = await webService.startService({
     port: PORT,
-    services: [alert, email, phone, monitor],
+    services: [alert, email, phone, monitor, db],
   });
 };
 

@@ -1,2 +1,3 @@
 digital_ocean_key*
 tfvars
+terraform.tfstate*

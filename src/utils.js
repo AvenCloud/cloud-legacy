@@ -19,6 +19,12 @@ export async function genAuthCode(length = 6) {
   return intStr.substr(3, length);
 }
 
+export async function genKey(length = 6) {
+  const randBuf = await randomBytes(48);
+  const hex = randBuf.toString('hex');
+  return hex;
+}
+
 export function uuid() {
   return uuidv1();
 }
