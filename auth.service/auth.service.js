@@ -35,7 +35,7 @@ export const startService = ({ db, name, authMethods }) => {
     });
   }
 
-  async function verifySession({ domain, authName, authKey, authSession }) {
+  async function verifySession({ domain, authName, authSession, authKey }) {
     const ref = await db.actions.getRefObject({
       domain,
       ref: `~${authName}`,
@@ -99,6 +99,14 @@ export const startService = ({ db, name, authMethods }) => {
         domain,
         ref,
       });
+    },
+
+    listRefs: async ({ domain, authName, authSession, authKey }) => {
+      await verifySession({ domain, authName, authSession, authKey });
+      if (!ADMIN_USERS.has(authName)) {
+        throw new Error('Invalid permission');
+      }
+      return await db.actions.listRefs({ domain });
     },
 
     getObject: async ({ domain, authName, authSession, authKey, ref, id }) => {
@@ -278,7 +286,13 @@ export const startService = ({ db, name, authMethods }) => {
       return { authChallenge };
     },
 
-    accountPutAuth: async ({ foo, bar }) => {},
+    accountPutAuth: async ({
+      domain,
+      authName,
+      authMethod,
+      authInfo,
+      authResponse,
+    }) => {},
 
     accountCreate: async ({
       domain,

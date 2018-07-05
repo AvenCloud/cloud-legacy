@@ -202,6 +202,7 @@ WHERE constraint_type = 'FOREIGN KEY'
     return { id };
   }
   async function putBinaryObject(buffer) {
+    throw new Error('Coming soon');
     return { id: 'coming soon' };
   }
 
@@ -316,6 +317,13 @@ WHERE constraint_type = 'FOREIGN KEY'
     return result.rows;
   }
 
+  async function listRefs({ domain }) {
+    const result = await pg.query('SELECT id FROM refs WHERE domain = $1', [
+      domain,
+    ]);
+    return result.rows;
+  }
+
   async function putRefPermission({ domain, ref, owner, permission }) {
     await pg.query('BEGIN');
     try {
@@ -371,6 +379,7 @@ WHERE constraint_type = 'FOREIGN KEY'
     getObject,
     getObjectViaRef,
     getRef,
+    listRefs,
     listRefObjects,
     getRefPermissions,
     setRefIsPublic,

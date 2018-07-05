@@ -23,6 +23,7 @@
     "fs-extra": "^6.0.1",
     "gun": "^0.9.997",
     "helmet": "^3.12.1",
+    "js-cookie": "^2.2.0",
     "json-stable-stringify": "^1.0.1",
     "minio": "^5.0.2",
     "node-fetch": "^2.1.2",

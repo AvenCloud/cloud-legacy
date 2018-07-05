@@ -9,7 +9,7 @@ import { createSwitchNavigator } from '@react-navigation/core';
 import AContext from './aContext';
 import Aven from './aven-client/Aven';
 import createSidebarPage from './createSidebarPage';
-
+const Cookies = require('js-cookie');
 const Docs = createSidebarPage([
   require('./docs/GettingStarted').default,
   require('./docs/DispatchingActions').default,
@@ -82,8 +82,10 @@ const AppNavigator = createSwitchNavigator(
 const aven = new Aven({
   host: 'localhost:8080',
   disableHTTPS: true,
-  onCookieData: () => {},
-  cookieData: {},
+  onCookieData: values => {
+    Cookies.set('aven-data', JSON.stringify(values));
+  },
+  cookieData: JSON.parse(Cookies.get('aven-data') || '{}'),
   domain: 'aven.io',
 });
 

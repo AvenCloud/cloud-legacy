@@ -13,6 +13,7 @@ import { withNavigation } from '@react-navigation/core';
 import { Formik } from 'formik';
 import MaterialButton from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
+import { withA } from './aContext';
 
 const pageWidth = 1200;
 const pagePadding = 30;
@@ -130,7 +131,7 @@ const HeaderLinkWithNav = ({ title, navigation, to }) => (
 
 const HeaderLink = withNavigation(HeaderLinkWithNav);
 
-export const Page = ({ children }) => (
+const PageA = ({ children, aven }) => (
   <React.Fragment>
     <View style={{ minHeight: 50 }}>
       <View
@@ -164,9 +165,16 @@ export const Page = ({ children }) => (
           <View style={{ marginHorizontal: pagePadding, flexDirection: 'row' }}>
             <HeaderLink title="Docs" to="docs" />
             <HeaderLink title="Blog" to="about" />
-            <HeaderLink title="Dashboard" to="dashboard" />
-            <HeaderLink title="Register" to="register" />
-            <HeaderLink title="Login" to="login" />
+            {aven.state.isAuthenticated ? (
+              <React.Fragment>
+                <HeaderLink title="Dashboard" to="dashboard" />
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <HeaderLink title="Register" to="register" />
+                <HeaderLink title="Login" to="login" />
+              </React.Fragment>
+            )}
           </View>
         </View>
       </View>
@@ -201,6 +209,8 @@ export const Page = ({ children }) => (
   </React.Fragment>
 );
 
+export const Page = withA(PageA);
+
 export const Title = ({ children }) => (
   <View style={{ marginVertical: 30 }}>
     <Text style={{ fontSize: 40 }}>{children}</Text>
@@ -219,6 +229,11 @@ export const FormInput = ({ label, id, field }) => (
     value={field.value || ''}
     onChange={field.onChange}
     margin="normal"
+    onKeyUp={e => {
+      if (e.nativeEvent.keyCode === 13) {
+        field.onSubmit();
+      }
+    }}
   />
 );
 
@@ -226,6 +241,12 @@ export const Button = ({ onPress, title }) => (
   <MaterialButton variant="outlined" color="default" onClick={onPress}>
     {title}
   </MaterialButton>
+);
+
+export const HeaderButton = ({ onPress, title }) => (
+  <View style={{ marginLeft: 10 }}>
+    <Button onPress={onPress} title={title} />
+  </View>
 );
 
 export const FormSubmit = ({ submitForm }) => (
@@ -246,6 +267,11 @@ export class Form extends React.Component {
           marginVertical: 20,
           alignSelf: 'center',
         }}>
+        {this.props.title && (
+          <Text style={{ color: '#333', fontSize: 32, marginVertical: 30 }}>
+            {this.props.title}
+          </Text>
+        )}
         <Formik
           initialValues={{
             nameOrEmailOrPhone: '',
@@ -269,12 +295,15 @@ export class Form extends React.Component {
             submitForm,
           }) =>
             this.props.render({
+              isSubmitting,
               submitForm,
               createField: id => {
+                const f = id;
                 return {
-                  value: values[id],
+                  value: values[f],
+                  onSubmit: submitForm,
                   onChange: e => {
-                    setValues({ [id]: e.nativeEvent.target.value });
+                    setValues({ ...values, [f]: e.nativeEvent.target.value });
                   },
                 };
               },

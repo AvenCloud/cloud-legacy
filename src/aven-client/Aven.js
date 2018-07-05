@@ -72,7 +72,6 @@ export default class Aven extends Container {
       },
       body: JSON.stringify(action),
     });
-    console.log('response! ', action, res.status);
     return await res.json();
   }
 
@@ -108,8 +107,38 @@ export default class Aven extends Container {
 
   async loginWithPassword(authName, password) {}
 
+  async requestEmailLogin(email) {
+    await this.authRequest('email', { email, context: 'login' });
+  }
+  async requestPhoneLogin(phone) {
+    await this.authRequest('phone', { phone, context: 'login' });
+  }
+  async requestAuthNameLogin(username) {
+    await this.authRequest('default', { username });
+  }
+
+  async verifyLoginCode(verificationCode) {
+    const sessionResponse = await this.dispatchWithDomain({
+      type: 'sessionCreate',
+      authMethod: this.state.authRequestMethod,
+      authInfo: this.state.authRequestInfo,
+      authResponse: { verificationCode },
+    });
+    if (!sessionResponse || !sessionResponse.authSession) {
+      throw new Error(sessionResponse.error || 'Could not create account');
+    }
+    await this.setState({
+      authRequestMethod: null,
+      authRequestInfo: null,
+      isAuthenticated: true,
+      authKey: sessionResponse.authKey,
+      authSession: sessionResponse.authSession,
+      authName: sessionResponse.authName,
+    });
+  }
+
   async authRequest(authMethod, authInfo) {
-    const requestData = await this.dispatch({
+    const requestData = await this.dispatchWithDomain({
       type: 'authRequest',
       authMethod,
       authInfo,
@@ -134,6 +163,11 @@ export default class Aven extends Container {
       authInfo: this.state.authRequestInfo,
       authResponse,
     });
+    if (!accountCreateResponse || !accountCreateResponse.authSession) {
+      throw new Error(
+        accountCreateResponse.error || 'Could not create account',
+      );
+    }
     await this.setState({
       authRequestMethod: null,
       authRequestInfo: null,
@@ -142,10 +176,9 @@ export default class Aven extends Container {
       authSession: accountCreateResponse.authSession,
       authName: accountCreateResponse.authName,
     });
-    debugger;
   }
 
-  async sessionDestroy() {
+  async logout() {
     if (!this.state.authSession) {
       return;
     }

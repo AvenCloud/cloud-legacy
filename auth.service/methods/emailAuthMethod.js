@@ -90,6 +90,7 @@ export default function emailAuthMethod({ email }) {
       authRef,
       verificationCode,
       verificationRequestTime: Date.now(),
+      authInfo,
       authChallenge: {
         email: to,
       },

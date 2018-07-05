@@ -2,6 +2,7 @@ import React from 'react';
 import { withA } from './aContext';
 import { View, Text, ScrollView, TouchableHighlight } from 'react-native';
 import {
+  HeaderButton,
   Button,
   Page,
   Title,
@@ -24,6 +25,7 @@ import withNavigation from '@react-navigation/core/lib/withNavigation';
 import DraftsIcon from '@material-ui/icons/Drafts';
 import PeopleIcon from '@material-ui/icons/People';
 import FolderIcon from '@material-ui/icons/Folder';
+import SettingsIcon from '@material-ui/icons/Settings';
 
 import { createSwitchNavigator } from '@react-navigation/core';
 const Icon = ({ name }) => (
@@ -38,27 +40,36 @@ const DashboardPage = ({ children, title, icon, headerRight }) => (
     <AppBar position="static" color="default">
       <Toolbar>
         <Typography variant="title" color="inherit">
-          Title
+          {title}
         </Typography>
+        <View style={{ flex: 1 }} />
+        {headerRight}
       </Toolbar>
     </AppBar>
-    <View
-      style={{
-        backgroundColor: '#f2f2f2',
-        minWidth: '100%',
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-        padding: 20,
-        flexDirection: 'row',
-      }}>
-      {icon}
-      <Text style={{ fontSize: 32, color: Colors.header }}>{title}</Text>
-      <View style={{ flex: 1 }} />
-      {headerRight}
-    </View>
     {children}
   </View>
 );
+
+const AccountCreatePage = () => (
+  <DashboardPage
+    title="Create Account"
+    icon={<PeopleIcon />}
+    headerRight={null}
+  />
+);
+
+const SettingsPageA = ({ navigation, aven }) => (
+  <DashboardPage title="Settings" icon={<SettingsIcon />} headerRight={null}>
+    <Button
+      title="Log out"
+      onPress={async () => {
+        await aven.logout();
+        navigation.navigate('home');
+      }}
+    />
+  </DashboardPage>
+);
+const SettingsPage = withA(SettingsPageA);
 
 const FilesPage = () => (
   <DashboardPage
@@ -66,8 +77,8 @@ const FilesPage = () => (
     icon={<FolderIcon />}
     headerRight={
       <React.Fragment>
-        <Button title="New file" />
-        <Button title="Info" />
+        <HeaderButton title="New file" />
+        <HeaderButton title="Info" />
       </React.Fragment>
     }>
     <Title>Files</Title>
@@ -80,8 +91,8 @@ const AccountPageNav = ({ navigation }) => (
     icon={<Avatar className="">HY</Avatar>}
     headerRight={
       <React.Fragment>
-        <Button title="Reset Password" />
-        <Button title="Delete Account" />
+        <HeaderButton title="Reset Password" />
+        <HeaderButton title="Delete Account" />
       </React.Fragment>
     }>
     <Title>Account</Title>
@@ -130,13 +141,16 @@ class AccountList extends React.Component {
   }
 }
 
-const AccountsPage = () => (
+const AccountsPage = ({ navigation }) => (
   <DashboardPage
     title="Accounts"
     icon={<PeopleIcon />}
     headerRight={
       <React.Fragment>
-        <Button title="New Account" />
+        <HeaderButton
+          title="New Account"
+          onPress={() => navigation.navigate('account-create')}
+        />
       </React.Fragment>
     }>
     <AccountList />
@@ -147,6 +161,8 @@ const DashNavigator = createSwitchNavigator({
   accounts: AccountsPage,
   files: FilesPage,
   account: AccountPage,
+  'account-create': AccountCreatePage,
+  settings: SettingsPage,
 });
 
 class DashboardWithA extends React.Component {
@@ -156,6 +172,11 @@ class DashboardWithA extends React.Component {
       <Page>
         <View style={{ flexDirection: 'row', flex: 1 }}>
           <Sidebar>
+            <SidebarLink
+              title={'Settings'}
+              to={'settings'}
+              icon={<SettingsIcon />}
+            />
             <SidebarLink
               title={'Accounts'}
               to={'accounts'}
