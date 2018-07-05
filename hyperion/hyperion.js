@@ -16,6 +16,7 @@ const startHyperion = async () => {
     plivoAuthToken: process.env.PLIVO_AUTH_TOKEN,
     defaultFromNumber: process.env.PLIVO_FROM_NUMBER,
   });
+
   const email = await await emailService.startService({
     sendgridKey: process.env.SENDGRID_KEY,
     defaultFromEmail: process.env.DEFAULT_FROM_EMAIL,
