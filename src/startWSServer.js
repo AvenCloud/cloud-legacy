@@ -1,5 +1,4 @@
 import uuid from 'uuid/v1';
-import dispatch from './dispatch';
 import { subscribe } from './pubsub';
 
 export default function startWSServer(wss) {
@@ -47,11 +46,11 @@ export default function startWSServer(wss) {
           return;
         }
         default: {
-          const result = await dispatch(action);
-          sendMessage('ActionResponse', {
-            result,
-            requestId,
-          });
+          // const result = await dispatch(action);
+          // sendMessage('ActionResponse', {
+          //   result,
+          //   requestId,
+          // });
           return;
         }
       }

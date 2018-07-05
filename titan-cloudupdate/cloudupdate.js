@@ -35,6 +35,8 @@ app.post(
     console.log('git pull', result.toString());
     const result2 = exec('yarn');
     console.log('yarn', result2.toString());
+    const resultBuild = exec('yarn', ['build']);
+    console.log('yarn build', resultBuild.toString());
     const result3 = exec('sudo', ['/bin/systemctl', 'restart', 'titan']);
     console.log('restart titan', result3.toString());
 

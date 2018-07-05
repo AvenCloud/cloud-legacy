@@ -2,7 +2,6 @@ import express from 'express';
 import { json } from 'body-parser';
 import ReactDOMServer from 'react-dom/server';
 import { AppRegistry } from 'react-native';
-import createDispatcher from './dispatch';
 import App from './App';
 import { handleServerRequest } from '@react-navigation/web';
 import startWSServer from './startWSServer';
