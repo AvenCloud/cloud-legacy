@@ -56,6 +56,18 @@ app.post(
     ]);
     console.log('sync config to hyperion', rsyncConfig.toString());
 
+    const rsyncNginxConf = exec('rsync', [
+      'titan-cloudupdate/hyperion.nginx.conf',
+      'root@hyperion.aven.cloud:/etc/nginx/nginx.conf',
+    ]);
+    console.log('sync nginx config to hyperion', rsyncNginxConf.toString());
+    const nginxReload = exec('ssh', [
+      'root@hyperion.aven.cloud',
+      '-t',
+      'nginx -s reload',
+    ]);
+    console.log('reload nginx conf on hyperion', nginxReload.toString());
+
     const remoteYarn = exec('ssh', [
       'root@hyperion.aven.cloud',
       '-t',

@@ -16,7 +16,7 @@ const phoneService = require('../phone.service/phone.service');
 const dbService = require('../db.service/db.service');
 const authService = require('../auth.service/auth.service');
 
-const yes = require('yes-https');
+const yesHTTPS = require('yes-https');
 const helmet = require('helmet');
 const WebSocket = require('ws');
 
@@ -29,8 +29,8 @@ const staticDir = config.CLOUD_APP_PUBLIC_DIR || process.env.RAZZLE_PUBLIC_DIR;
 export default async function startServer(inputConfig) {
   const server = express();
 
-  server.use(helmet());
-  server.use(yes());
+  // server.use(helmet());
+  // server.use(yesHTTPS());
   if (staticDir) {
     server.use(express.static(staticDir));
   }
