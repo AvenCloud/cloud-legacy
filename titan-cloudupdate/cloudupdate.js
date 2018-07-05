@@ -50,6 +50,12 @@ app.post(
     ]);
     console.log('sync code to hyperion', rsync.toString());
 
+    const rsyncConfig = exec('rsync', [
+      '.env.hyperion',
+      'root@hyperion.aven.cloud:/cloud/.env',
+    ]);
+    console.log('sync config to hyperion', rsyncConfig.toString());
+
     const remoteYarn = exec('ssh', [
       'root@hyperion.aven.cloud',
       '-t',

@@ -29,10 +29,10 @@ const startTitan = async () => {
     alertEmail: process.env.ALERT_EMAIL,
   });
 
-  const monitor = await monitorService.startService({
-    alert,
-    monitorHost: 'hyperion.aven.cloud',
-  });
+  // const monitor = await monitorService.startService({
+  //   alert,
+  //   monitorHost: 'hyperion.aven.cloud',
+  // });
 
   const db = await dbService.startService({
     user: process.env.PG_USER,
