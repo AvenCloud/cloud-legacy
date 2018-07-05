@@ -55,7 +55,7 @@ app.post(
       '-t',
       'cd /cloud && yarn',
     ]);
-    console.log('remote yarn', hyperion.toString());
+    console.log('remote yarn', remoteYarn.toString());
 
     const hyperion = exec('ssh', [
       'root@hyperion.aven.cloud',
