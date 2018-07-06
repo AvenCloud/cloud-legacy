@@ -144,7 +144,7 @@ export default async function startServer(inputConfig) {
     }
   });
 
-  throw new Error('trying to start with ' + serverConfig.PORT);
+  throw new Error('Starting with ' + serverConfig.PORT);
 
   httpServer.listen(serverConfig.PORT, error => {
     if (error) {
