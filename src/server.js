@@ -29,8 +29,8 @@ const staticDir = config.CLOUD_APP_PUBLIC_DIR || process.env.RAZZLE_PUBLIC_DIR;
 export default async function startServer(inputConfig) {
   const server = express();
 
-  // server.use(helmet());
-  // server.use(yesHTTPS());
+  server.use(helmet());
+  server.use(yesHTTPS());
   if (staticDir) {
     server.use(express.static(staticDir));
   }
