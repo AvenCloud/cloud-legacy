@@ -6,8 +6,6 @@ const webService = require('../web.service/web.service');
 const alertService = require('../alert.service/alert.service');
 const monitorService = require('../monitor.service/monitor.service');
 
-const PORT = 8880;
-
 require('dotenv').config();
 
 const startHyperion = async () => {
@@ -35,7 +33,7 @@ const startHyperion = async () => {
   });
 
   const web = await webService.startService({
-    port: PORT,
+    port: process.env.PORT || 8888,
     services: [alert, email, phone, monitor],
   });
 };
