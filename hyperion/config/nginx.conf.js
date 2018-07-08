@@ -99,7 +99,7 @@ http {
 		listen [::]:80 default_server;
 
 		location ^~ /.well-known/acme-challenge/ {
-			proxy-pass https://hyperion.aven.cloud;
+			proxy_pass https://hyperion.aven.cloud;
 		}
 		location / {
 			return 301 https://$http_host$request_uri;
