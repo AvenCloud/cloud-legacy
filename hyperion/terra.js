@@ -187,17 +187,18 @@ const computeTfConfig = clusters => {
 };
 
 async function goTerra() {
-  const clusters = {
-    // cam: {
-    //   type: 'artemis',
-    //   publicHosts: [],
-    //   pgPass: 'abc123fooBARbaz',
-    //   region: 'sfo2',
-    //   pgSize: 's-1vcpu-1gb',
-    //   nodeSize: 's-1vcpu-1gb',
-    //   nodeCount: 2,
-    // },
-  };
+  const clusters = JSON.parse(readFile('/hyperion.cluster.json'));
+  // const clusters = {
+  //   // cam: {
+  //   //   type: 'artemis',
+  //   //   publicHosts: [],
+  //   //   pgPass: 'abc123fooBARbaz',
+  //   //   region: 'sfo2',
+  //   //   pgSize: 's-1vcpu-1gb',
+  //   //   nodeSize: 's-1vcpu-1gb',
+  //   //   nodeCount: 2,
+  //   // },
+  // };
 
   const tfConfig = computeTfConfig(clusters);
 
@@ -206,10 +207,14 @@ async function goTerra() {
     JSON.stringify(tfConfig, null, 2),
   );
 
-  await spawn('terraform', ['apply', '-auto-approve'], {
-    stdio: 'inherit',
-    cwd: resolvePath('.'),
-  });
+  await spawn(
+    'terraform',
+    ['apply', '-auto-approve', '-state', '/hyperion.tfstate'],
+    {
+      stdio: 'inherit',
+      cwd: resolvePath('.'),
+    },
+  );
 
   console.log('Done terraforming');
 
