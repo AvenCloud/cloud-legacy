@@ -187,17 +187,17 @@ const computeTfConfig = clusters => {
 };
 
 async function goTerra() {
-  const clusters = JSON.parse(readFile('/hyperion.cluster.json'));
+  const clusters = JSON.parse(readFile('/hyperion.clusters.json'));
   // const clusters = {
-  //   // cam: {
-  //   //   type: 'artemis',
-  //   //   publicHosts: [],
-  //   //   pgPass: 'abc123fooBARbaz',
-  //   //   region: 'sfo2',
-  //   //   pgSize: 's-1vcpu-1gb',
-  //   //   nodeSize: 's-1vcpu-1gb',
-  //   //   nodeCount: 2,
-  //   // },
+    cam: {
+      type: 'artemis',
+      publicHosts: [],
+      pgPass: 'abc123fooBARbaz',
+      region: 'sfo2',
+      pgSize: 's-1vcpu-1gb',
+      nodeSize: 's-1vcpu-1gb',
+      nodeCount: 2,
+    },
   // };
 
   const tfConfig = computeTfConfig(clusters);
