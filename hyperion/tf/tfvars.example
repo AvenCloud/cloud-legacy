@@ -1,9 +1,0 @@
-digitalocean_token = "..."
-
-cloudflare_token = "..."
-
-cloudflare_email = "..."
-
-name = "myserver"
-
-servers_ssh_public_key = "/home/me/.ssh/id_rsa.pub"

@@ -1,0 +1,14 @@
+[Unit]
+Description=Aven Cloud Main Service
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=3
+ExecStart=/usr/bin/node /cloud/build/server.js
+WorkingDirectory=/cloud
+
+[Install]
+WantedBy=multi-user.target
+

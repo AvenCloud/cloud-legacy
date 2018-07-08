@@ -19,3 +19,5 @@ build
 test-data
 
 .ssl
+
+hyperion.key*
