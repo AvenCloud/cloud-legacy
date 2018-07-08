@@ -32,6 +32,7 @@ server {
 
 module.exports = ({ clusterName, sslHostnames }) => `
 
+
 user www-data;
 worker_processes auto;
 pid /run/nginx.pid;
