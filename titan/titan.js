@@ -45,7 +45,7 @@ const startTitan = async () => {
 
   const web = await webService.startService({
     port: PORT,
-    services: [alert, email, phone, monitor, db],
+    services: [alert, email, phone, db],
   });
 };
 
