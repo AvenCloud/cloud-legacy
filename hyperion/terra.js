@@ -1,4 +1,5 @@
 const fs = require('fs-extra');
+const nginxConfig = require('./config/nginx.conf.js');
 const spawn = require('@expo/spawn-async');
 const { promisify } = require('util');
 const { join } = require('path');
@@ -240,30 +241,27 @@ async function goTerra() {
       return 'unknown';
     };
     const nodes = {};
-    stateResourceNames
-      // .filter(n =>
-      //   n.match(new RegExp('^digitalocean_droplet.' + clusterName + '_node')),
-      // )
-      .forEach(resourceName => {
-        const type = getTypeFromResourceName(resourceName);
-        if (type === 'unknown') {
-          return;
-        }
-        const r = tfState.modules[0].resources[resourceName];
-        const {
-          ipv4_address,
-          price_hourly,
-          price_monthly,
-          region,
-        } = r.primary.attributes;
-        nodes[resourceName] = {
-          price_hourly,
-          ipv4_address,
-          price_monthly,
-          region,
-          type,
-        };
-      });
+    stateResourceNames.forEach(resourceName => {
+      const type = getTypeFromResourceName(resourceName);
+      if (type === 'unknown') {
+        return;
+      }
+      const r = tfState.modules[0].resources[resourceName];
+      const {
+        ipv4_address,
+        price_hourly,
+        price_monthly,
+        region,
+        ip, // load balancer provides ip instead of ipv4_address
+      } = r.primary.attributes;
+      nodes[resourceName] = {
+        price_hourly,
+        ipv4_address: ipv4_address || ip,
+        price_monthly,
+        region,
+        type,
+      };
+    });
     return {
       nodes,
     };
@@ -276,18 +274,136 @@ async function goTerra() {
     };
   });
 
-  for (let i = 0; i < clusterNames.length; i++) {
-    const clusterName = clusterNames[i];
-    console.log('SSL for ' + clusterName);
+  const keyDirOfDomain = domain => `/etc/letsencrypt/live/${domain}/`;
+  const remoteExec = async (ip, cmd) => {
+    await spawn('ssh', [
+      '-o',
+      'StrictHostKeyChecking=no',
+      '-i',
+      '/cloud/hyperion/hyperion.key',
+      `root@${ip}`,
+      '-t',
+      cmd,
+    ]);
+  };
+  const remoteExecNodesOnCluster = async (clusterName, cmd) => {
+    const { nodes } = clusterData[clusterName];
+    const results = await Promise.all(
+      Object.keys(nodes).map(async nodeName => {
+        const node = nodes[nodeName];
+        if (node.type !== 'node') return null;
+        return {
+          node,
+          nodeName,
+          clusterName,
+          result: await remoteExec(node.ipv4_address, cmd),
+        };
+      }),
+    );
+    return results.filter(r => !!r);
+  };
+  const rsync = async (source, ip, dest) => {
     await spawn(
-      'certbot',
-      ['certonly', '-n', '--keep', '-d', `${clusterName}.aven.cloud`],
+      'rsync',
+      [
+        '-rvzL',
+        '-e',
+        'ssh -o StrictHostKeyChecking=no -i /cloud/hyperion/hyperion.key',
+        source,
+        `root@${ip}:${dest}`,
+      ],
       {
         stdio: 'inherit',
       },
     );
+    console.log('copied ', source, ip, dest);
+  };
+  const rsyncToCluster = async (source, clusterName, dest) => {
+    const { nodes } = clusterData[clusterName];
+    const results = await Promise.all(
+      Object.keys(nodes).map(async nodeName => {
+        const node = nodes[nodeName];
+        if (node.type !== 'node') return null;
+        await rsync(source, node.ipv4_address, dest);
+        return {
+          node,
+          nodeName,
+        };
+      }),
+    );
+    return results.filter(r => !!r);
+  };
+  const refreshDomainKeysForCluster = async (clusterName, domain) => {
+    const cluster = clusterData[clusterName];
+    console.log(`SSL for ${domain} on ${clusterName}`);
+    try {
+      await spawn('certbot', ['certonly', '-n', '--keep', '-d', domain], {
+        stdio: 'inherit',
+      });
+    } catch (e) {
+      console.error('Could not get domain cert!', domain);
+      console.error(e);
+    }
+    const keyDir = keyDirOfDomain(domain);
+    let hasCert = false;
+    if (
+      (await fs.exists(join(keyDir, 'privkey.pem'))) &&
+      (await fs.exists(join(keyDir, 'fullchain.pem')))
+    ) {
+      hasCert = true;
+      await Promise.all(
+        Object.keys(cluster.nodes).map(async nodeName => {
+          const node = cluster.nodes[nodeName];
+          if (node.type !== 'node') return;
+          await remoteExec(node.ipv4_address, `mkdir -p ${keyDir}`);
+          await rsync(keyDir, node.ipv4_address, keyDir);
+        }),
+      );
+    }
 
-    // now, redistribute the keys and reconfigure nginx for each node
+    return {
+      hasCert,
+    };
+  };
+
+  for (let i = 0; i < clusterNames.length; i++) {
+    const clusterName = clusterNames[i];
+    const cluster = clusters[clusterName];
+    const clusterHost = `${clusterName}.aven.cloud`;
+
+    const hosts = {};
+
+    hosts[clusterHost] = await refreshDomainKeysForCluster(
+      clusterName,
+      clusterHost,
+    );
+
+    await Promise.all(
+      cluster.publicHosts.map(async publicHost => {
+        hosts[publicHost] = await refreshDomainKeysForCluster(
+          clusterName,
+          publicHost,
+        );
+      }),
+    );
+
+    const allClusterHosts = Object.keys(hosts);
+    const activeClusterHosts = allClusterHosts.filter(
+      hostName => hosts[hostName].hasCert,
+    );
+
+    const config = nginxConfig({
+      sslHostnames: activeClusterHosts,
+      clusterName,
+    });
+    const localNginxCopy = `/node_configs/${clusterName}.nginx.conf`;
+    await fs.writeFile(localNginxCopy, config);
+    await rsyncToCluster(localNginxCopy, clusterName, '/etc/nginx/nginx.conf');
+    const reloadResults = await remoteExecNodesOnCluster(
+      clusterName,
+      'nginx -s reload',
+    );
+    console.log('reloadResults', reloadResults);
   }
 
   return clusterData;
