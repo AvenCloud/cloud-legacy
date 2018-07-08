@@ -209,7 +209,7 @@ async function goTerra() {
 
   console.log('SSL setup time');
 
-  const tfStateData = readFile(resolvePath('terraform.tfstate'));
+  const tfStateData = readFile(resolvePath('/hyperion.tfstate'));
 
   const clusterData = {};
   const tfState = JSON.parse(tfStateData);
