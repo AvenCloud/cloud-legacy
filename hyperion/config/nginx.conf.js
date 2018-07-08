@@ -30,7 +30,7 @@ server {
     )
     .join('\n');
 
-module.exports = ({ clusterName, hasSSL }) => `
+module.exports = ({ clusterName, sslHostnames }) => `
 
 user www-data;
 worker_processes auto;
