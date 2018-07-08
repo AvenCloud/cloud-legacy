@@ -190,7 +190,7 @@ async function goTerra() {
   const clusters = {
     // cam: {
     //   type: 'artemis',
-    //   publicHost: 'aven.cloud',
+    //   publicHosts: [],
     //   pgPass: 'abc123fooBARbaz',
     //   region: 'sfo2',
     //   pgSize: 's-1vcpu-1gb',
@@ -287,11 +287,13 @@ async function goTerra() {
     console.log('SSL for ' + clusterName);
     await spawn(
       'certbot',
-      ['certonly', '-n', '-d', `${clusterName}.aven.cloud`],
+      ['certonly', '-n', '--keep', '-d', `${clusterName}.aven.cloud`],
       {
         stdio: 'inherit',
       },
     );
+
+    // now, redistribute the keys and reconfigure nginx for each node
   }
 
   return clusterData;

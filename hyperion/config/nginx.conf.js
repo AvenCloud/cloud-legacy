@@ -1,23 +1,34 @@
-const SSLConfig = ({ clusterName }) => `
+const SSLConfig = ({ clusterName, sslHostnames }) =>
+  sslHostnames
+    .map(
+      hostName => `
 
 server {
 
-	# SSL configuration
-	listen 443 ssl default_server;
-	listen [::]:443 ssl default_server;
-	ssl_certificate     /etc/letsencrypt/live/${clusterName}.aven.cloud/fullchain.pem;
-	ssl_certificate_key /etc/letsencrypt/live/${clusterName}.aven.cloud/privkey.pem;
+	listen 443 ssl;
+	listen [::]:443 ssl;
+	ssl_certificate     /etc/letsencrypt/live/${hostName}/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/${hostName}/privkey.pem;
 	
-	server_name ${clusterName}.aven.cloud;
+	server_name ${hostName};
 
 	location / {
+		proxy_http_version 1.1;
 		proxy_pass http://127.0.0.1:8080;
 		proxy_set_header X-Forwarded-Proto https;
+		proxy_set_header X-Real-IP $remote_adddr;
+		proxy_set_header X-Forwarded-Ssl on;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection $connection_upgrade;
 	}
 
 }
 
-`;
+`,
+    )
+    .join('\n');
 
 module.exports = ({ clusterName, hasSSL }) => `
 
@@ -48,6 +59,11 @@ http {
 
 	include /etc/nginx/mime.types;
 	default_type application/octet-stream;
+
+	map $http_upgrade $connection_upgrade {
+			default upgrade;
+			'' close;
+	}
 
 	##
 	# SSL Settings
@@ -82,11 +98,14 @@ http {
 		listen [::]:80 default_server;
 
 		location ^~ /.well-known/acme-challenge/ {
-			proxy-pass 
+			proxy-pass https://hyperion.aven.cloud;
+		}
+		location / {
+			return 301 https://$http_host$request_uri;
 		}
 	}
 	
-	${SSLConfig({ clusterName })}
+	${SSLConfig({ clusterName, sslHostnames })}
 }
 
 `;
