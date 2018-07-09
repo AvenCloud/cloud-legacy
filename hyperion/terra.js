@@ -403,8 +403,9 @@ async function goTerra() {
       clusterName,
       'nginx -s reload',
     );
-    console.log('reloadResults', reloadResults);
   }
+
+  console.log('Time to update the code for all nodes!');
 
   return clusterData;
 }
