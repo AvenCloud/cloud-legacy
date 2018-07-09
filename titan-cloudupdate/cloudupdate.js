@@ -82,6 +82,8 @@ app.post(
     ]);
     console.log('restart hyperion', hyperion.toString());
 
+    console.log('run terraform');
+
     const terra = exec(
       'ssh',
       ['root@hyperion.aven.cloud', '-t', 'cd /cloud && node hyperion/terra'],
@@ -90,7 +92,31 @@ app.post(
       },
     );
 
-    console.log('run terraform', terra.toString());
+    console.log('doing node build - clone');
+
+    exec(
+      'rsync',
+      ['-r', '--exclude', 'node_modules', '/cloud', '/cloud_build'],
+      {
+        stdio: 'inherit',
+      },
+    );
+    console.log('doing node build - yarn');
+
+    exec('yarn', [], {
+      stdio: 'inherit',
+      cwd: '/cloud_build',
+    });
+    console.log('doing node build - tar');
+
+    exec('tar', ['-zcf', '/cloud_build.tar.gz', '/cloud_build'], {
+      stdio: 'inherit',
+      cwd: '/',
+    });
+
+    console.log('doing node build - env file');
+    console.log('doing node build - dist tarball');
+    console.log('doing node build - reboot servers');
 
     console.log('deploy complete!');
 
