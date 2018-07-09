@@ -89,6 +89,7 @@ app.post(
         stdio: 'inherit',
       },
     );
+
     console.log('run terraform', terra.toString());
 
     console.log('deploy complete!');
