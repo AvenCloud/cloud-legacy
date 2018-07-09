@@ -102,8 +102,12 @@ app.post(
       },
     );
     console.log('doing node build - yarn');
-
     exec('yarn', [], {
+      stdio: 'inherit',
+      cwd: '/cloud_build',
+    });
+    console.log('doing node build - yarn build');
+    exec('yarn', ['build'], {
       stdio: 'inherit',
       cwd: '/cloud_build',
     });
