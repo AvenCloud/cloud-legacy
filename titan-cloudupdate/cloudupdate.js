@@ -82,6 +82,15 @@ app.post(
     ]);
     console.log('restart hyperion', hyperion.toString());
 
+    const terra = exec(
+      'ssh',
+      ['root@hyperion.aven.cloud', '-t', 'cd /cloud && node hyperion/terra'],
+      {
+        stdio: 'inherit',
+      },
+    );
+    console.log('run terraform', terra.toString());
+
     console.log('deploy complete!');
 
     res.send('thanks github');
