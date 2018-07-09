@@ -84,7 +84,7 @@ app.post(
 
     console.log('run terraform');
 
-    const terra = exec(
+    exec(
       'ssh',
       ['root@hyperion.aven.cloud', '-t', 'cd /cloud && node hyperion/terra'],
       {
