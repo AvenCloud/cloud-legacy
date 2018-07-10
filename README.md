@@ -2,4 +2,4 @@
 
 Mobile and web databases made easy
 
-https://aven.cloud/docs
+https://aven.cloud/
