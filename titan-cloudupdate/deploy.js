@@ -66,7 +66,7 @@ const goDeploy = async () => {
 
   exec(
     'rsync',
-    ['-r', '--exclude', 'node_modules', '/cloud', '/cloud-data/build/'],
+    ['-r', '--exclude', 'node_modules', '/cloud/', '/cloud-data/build'],
     {
       stdio: 'inherit',
     },
